@@ -1,0 +1,9 @@
+{
+  "name": "s2y-batches",
+  "compatibility_date": "2025-12-14",
+  "assets": {
+    "binding": "ASSETS",
+    "directory": "./docs"
+  },
+  "main": null
+}
