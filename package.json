@@ -2,8 +2,8 @@
   "name": "s2y-batches",
   "version": "1.0.0",
   "scripts": {
-    "postinstall": "rm -rf docs/SymptomsCausedByDrugs",
-    "build": "rm -rf docs/SymptomsCausedByDrugs",
+    "postinstall": "rm -rf docs/SymptomsCausedByDrugs && find docs/data/histograms/Global -type f \\( -name '* *' -o -name '*[#%;]*' \\) -delete",
+    "build": "rm -rf docs/SymptomsCausedByDrugs && find docs/data/histograms/Global -type f \\( -name '* *' -o -name '*[#%;]*' \\) -delete",
     "deploy": "wrangler deploy"
   },
   "devDependencies": {
