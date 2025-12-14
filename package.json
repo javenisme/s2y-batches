@@ -1,0 +1,11 @@
+{
+  "name": "s2y-batches",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "rm -rf docs/SymptomsCausedByDrugs docs/data/histograms/Global",
+    "deploy": "wrangler deploy"
+  },
+  "devDependencies": {
+    "wrangler": "^3.0.0"
+  }
+}
