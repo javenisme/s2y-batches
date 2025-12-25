@@ -3,13 +3,14 @@
 Generate zipcode-level risk data for visualization.
 
 This script creates aggregated JSON files for the Zipcode Risk Map:
-- ZipcodeRiskSummary.json: Detailed zipcode-level data
+- ZipcodeRiskSummary.json: Detailed zipcode-level data with coordinates
 - ZipcodeRiskStats.json: Statistical summary
 """
 
 import os
 import json
 from ZipcodeRiskMapFactory import ZipcodeRiskMapFactory
+from ZipcodeCoordinateEnricher import ZipcodeCoordinateEnricher
 
 def main():
     print("=" * 70)
@@ -34,16 +35,46 @@ def main():
     print(f"\n2. Creating zipcode risk summary...")
     summary_df = factory.createZipcodeRiskSummary()
 
-    print(f"\n3. Creating risk distribution statistics...")
-    stats = factory.createRiskDistributionStats(summary_df)
+    print(f"\n3. Enriching with geographic coordinates...")
+    enricher = ZipcodeCoordinateEnricher(summary_df, zipcode_column='zipcode')
+    enriched_df = enricher.enrich_with_coordinates()
+
+    # Get and display match statistics
+    match_stats = enricher.get_match_statistics(enriched_df)
+    print(f"   - Total zipcodes: {match_stats['total_unique_zipcodes']:,}")
+    print(f"   - Matched: {match_stats['matched_unique_zipcodes']:,} ({match_stats['match_rate_unique']}%)")
+    print(f"   - Unmatched: {match_stats['unmatched_unique_zipcodes']:,}")
+
+    # Validate coordinates
+    validation = enricher.validate_coordinates(enriched_df)
+    if validation['invalid_count'] > 0:
+        print(f"   - Warning: {validation['invalid_count']} records with invalid coordinates")
+
+    # Get unmatched zipcodes
+    unmatched = enricher.get_unmatched_zipcodes(enriched_df)
+    if unmatched:
+        print(f"\n   Unmatched zipcodes (first 20): {', '.join(unmatched[:20])}")
+        if len(unmatched) > 20:
+            print(f"   ... and {len(unmatched) - 20} more")
+
+    print(f"\n4. Creating risk distribution statistics...")
+    stats = factory.createRiskDistributionStats(enriched_df)
+
+    # Add coordinate statistics to stats
+    stats['coordinate_statistics'] = match_stats
+    stats['coordinate_validation'] = {
+        'total_validated': validation['total_validated'],
+        'valid_count': validation['valid_count'],
+        'invalid_count': validation['invalid_count']
+    }
 
     # Save summary as JSON
-    print(f"\n4. Saving zipcode risk summary to {summary_path}...")
+    print(f"\n5. Saving zipcode risk summary to {summary_path}...")
     # Convert DataFrame to split-oriented JSON (compatible with DataTables)
-    summary_df.to_json(summary_path, orient='split', index=False, indent=2)
+    enriched_df.to_json(summary_path, orient='split', index=False, indent=2)
 
     # Save stats as JSON
-    print(f"\n5. Saving risk statistics to {stats_path}...")
+    print(f"\n6. Saving risk statistics to {stats_path}...")
     with open(stats_path, 'w') as f:
         json.dump(stats, f, indent=2)
 
@@ -54,7 +85,7 @@ def main():
 
     print(f"\nFiles created:")
     print(f"  - {summary_path}")
-    print(f"    ({len(summary_df):,} zipcodes)")
+    print(f"    ({len(enriched_df):,} records, {match_stats['total_unique_zipcodes']:,} unique zipcodes)")
     print(f"  - {stats_path}")
 
     print(f"\nRisk Distribution:")

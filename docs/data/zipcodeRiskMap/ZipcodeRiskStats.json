@@ -22,5 +22,20 @@
     "max": 973.3
   },
   "total_doses": 410324230.0,
-  "total_adverse_events": 229750.40999999997
+  "total_adverse_events": 229750.40999999997,
+  "coordinate_statistics": {
+    "total_records": 17847,
+    "matched_records": 17847,
+    "unmatched_records": 0,
+    "match_rate_records": 100.0,
+    "total_unique_zipcodes": 12370,
+    "matched_unique_zipcodes": 12370,
+    "unmatched_unique_zipcodes": 0,
+    "match_rate_unique": 100.0
+  },
+  "coordinate_validation": {
+    "total_validated": 17847,
+    "valid_count": 17836,
+    "invalid_count": 11
+  }
 }

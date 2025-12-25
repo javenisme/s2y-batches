@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Map Performance Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-results {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .metric {
+            padding: 10px;
+            margin: 5px 0;
+            background: #f9f9f9;
+            border-left: 4px solid #2196F3;
+        }
+        .metric.pass {
+            border-left-color: #28a745;
+        }
+        .metric.fail {
+            border-left-color: #dc3545;
+        }
+        .metric-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .metric-value {
+            font-size: 24px;
+            color: #333;
+        }
+        .metric-target {
+            font-size: 12px;
+            color: #666;
+        }
+        #testButton {
+            padding: 15px 30px;
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 0;
+        }
+        #testButton:hover {
+            background-color: #1976D2;
+        }
+        #testButton:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .progress {
+            margin: 10px 0;
+            font-style: italic;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <h1>Leaflet Map Performance Test</h1>
+    <p>This page tests the performance of the Zipcode Risk Map implementation.</p>
+
+    <button id="testButton" onclick="runPerformanceTest()">Run Performance Test</button>
+    <div id="progress" class="progress"></div>
+
+    <div class="test-results" id="results">
+        <h2>Test Results</h2>
+        <p style="color: #666;">Click "Run Performance Test" to begin testing...</p>
+    </div>
+
+    <script>
+        async function runPerformanceTest() {
+            const button = document.getElementById('testButton');
+            const progress = document.getElementById('progress');
+            const results = document.getElementById('results');
+
+            button.disabled = true;
+            results.innerHTML = '<h2>Test Results</h2><p>Running tests...</p>';
+
+            const metrics = {
+                dataLoad: { name: 'Data Load Time', target: 1000, unit: 'ms' },
+                dataSize: { name: 'Zipcode Data Count', target: 17000, unit: 'zipcodes' },
+                coordinateCoverage: { name: 'Coordinate Coverage', target: 95, unit: '%' },
+                jsonParse: { name: 'JSON Parse Time', target: 500, unit: 'ms' },
+                memoryUsage: { name: 'Memory Impact', target: 50, unit: 'MB' }
+            };
+
+            try {
+                // Test 1: Data Load Time
+                progress.textContent = 'Testing data load performance...';
+                const loadStart = performance.now();
+
+                const summaryResponse = await fetch('./data/zipcodeRiskMap/ZipcodeRiskSummary.json');
+                const summaryJson = await summaryResponse.json();
+
+                const loadEnd = performance.now();
+                metrics.dataLoad.value = Math.round(loadEnd - loadStart);
+                metrics.dataLoad.pass = metrics.dataLoad.value <= metrics.dataLoad.target;
+
+                // Test 2: Data Size
+                progress.textContent = 'Analyzing data size...';
+                const dataCount = summaryJson.data.length;
+                metrics.dataSize.value = dataCount;
+                metrics.dataSize.pass = dataCount >= metrics.dataSize.target;
+
+                // Test 3: Coordinate Coverage
+                progress.textContent = 'Checking coordinate coverage...';
+                const latIndex = summaryJson.columns.indexOf('lat');
+                const lngIndex = summaryJson.columns.indexOf('lng');
+                const validCoords = summaryJson.data.filter(row =>
+                    row[latIndex] !== null && row[lngIndex] !== null
+                ).length;
+                const coverage = (validCoords / dataCount * 100).toFixed(1);
+                metrics.coordinateCoverage.value = parseFloat(coverage);
+                metrics.coordinateCoverage.pass = metrics.coordinateCoverage.value >= metrics.coordinateCoverage.target;
+
+                // Test 4: JSON Parse Performance
+                progress.textContent = 'Testing JSON parse performance...';
+                const parseStart = performance.now();
+                const parsedData = parseDataTableJson(summaryJson);
+                const parseEnd = performance.now();
+                metrics.jsonParse.value = Math.round(parseEnd - parseStart);
+                metrics.jsonParse.pass = metrics.jsonParse.value <= metrics.jsonParse.target;
+
+                // Test 5: Memory Usage (approximate)
+                progress.textContent = 'Estimating memory usage...';
+                const dataString = JSON.stringify(summaryJson);
+                const memorySizeMB = (dataString.length / 1024 / 1024).toFixed(2);
+                metrics.memoryUsage.value = parseFloat(memorySizeMB);
+                metrics.memoryUsage.pass = metrics.memoryUsage.value <= metrics.memoryUsage.target;
+
+                // Display results
+                progress.textContent = 'Tests complete!';
+                displayResults(metrics, {
+                    totalZipcodes: dataCount,
+                    validCoordinates: validCoords,
+                    invalidCoordinates: dataCount - validCoords
+                });
+
+            } catch (error) {
+                results.innerHTML = `
+                    <h2>Test Results</h2>
+                    <div class="metric fail">
+                        <div class="metric-name">Error</div>
+                        <div class="metric-value">${error.message}</div>
+                    </div>
+                `;
+            } finally {
+                button.disabled = false;
+            }
+        }
+
+        function parseDataTableJson(json) {
+            const data = [];
+            for (let i = 0; i < json.data.length; i++) {
+                const row = {};
+                for (let j = 0; j < json.columns.length; j++) {
+                    row[json.columns[j]] = json.data[i][j];
+                }
+                data.push(row);
+            }
+            return data;
+        }
+
+        function displayResults(metrics, summary) {
+            const results = document.getElementById('results');
+            let html = '<h2>Test Results</h2>';
+
+            // Summary stats
+            html += `
+                <div class="metric">
+                    <div class="metric-name">Total Zipcodes</div>
+                    <div class="metric-value">${summary.totalZipcodes.toLocaleString()}</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-name">Valid Coordinates</div>
+                    <div class="metric-value">${summary.validCoordinates.toLocaleString()}</div>
+                    <div class="metric-target">${summary.invalidCoordinates} without coordinates</div>
+                </div>
+            `;
+
+            // Performance metrics
+            Object.entries(metrics).forEach(([key, metric]) => {
+                const passClass = metric.pass ? 'pass' : 'fail';
+                html += `
+                    <div class="metric ${passClass}">
+                        <div class="metric-name">${metric.name}</div>
+                        <div class="metric-value">${metric.value} ${metric.unit}</div>
+                        <div class="metric-target">Target: ${metric.target} ${metric.unit} - ${metric.pass ? 'PASS' : 'FAIL'}</div>
+                    </div>
+                `;
+            });
+
+            // Overall assessment
+            const allPass = Object.values(metrics).every(m => m.pass);
+            const assessmentColor = allPass ? '#28a745' : '#ff8c00';
+            html += `
+                <div style="margin-top: 20px; padding: 15px; background-color: ${assessmentColor}20; border-left: 4px solid ${assessmentColor}; border-radius: 4px;">
+                    <h3 style="margin: 0 0 10px 0; color: ${assessmentColor};">
+                        ${allPass ? 'All Tests Passed' : 'Some Tests Failed'}
+                    </h3>
+                    <p style="margin: 0; color: #333;">
+                        ${allPass
+                            ? 'The map implementation meets all performance targets and is ready for production deployment.'
+                            : 'Some performance metrics did not meet targets. Review failed tests above.'}
+                    </p>
+                </div>
+            `;
+
+            // Expected map load time
+            const expectedMapLoad = metrics.dataLoad.value + metrics.jsonParse.value + 800;
+            html += `
+                <div style="margin-top: 20px; padding: 15px; background-color: #e7f3ff; border-left: 4px solid #2196F3; border-radius: 4px;">
+                    <h3 style="margin: 0 0 10px 0; color: #1976D2;">Expected Map Load Time</h3>
+                    <div style="font-size: 24px; color: #333; margin: 10px 0;">
+                        ~${expectedMapLoad} ms
+                    </div>
+                    <div style="color: #666; font-size: 14px;">
+                        Data Load (${metrics.dataLoad.value}ms) + Parse (${metrics.jsonParse.value}ms) + Rendering (~800ms)
+                    </div>
+                </div>
+            `;
+
+            results.innerHTML = html;
+        }
+    </script>
+</body>
+</html>

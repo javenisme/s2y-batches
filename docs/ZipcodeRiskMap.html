@@ -24,6 +24,22 @@
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.2.0/dist/chart.umd.min.js"></script>
 
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+    <!-- Leaflet.markercluster CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <!-- Leaflet.heat -->
+    <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+
+    <!-- Leaflet.markercluster JS -->
+    <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -151,6 +167,243 @@
         .info-box p {
             margin: 5px 0;
         }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 0;
+            border: 1px solid #888;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 700px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .modal-header {
+            padding: 20px;
+            background-color: #2196F3;
+            color: white;
+            border-radius: 8px 8px 0 0;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .close {
+            color: white;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            line-height: 20px;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: #f1f1f1;
+        }
+
+        .batch-list {
+            list-style: none;
+            padding: 0;
+            margin: 15px 0;
+        }
+
+        .batch-item {
+            padding: 12px;
+            margin: 8px 0;
+            background: #f9f9f9;
+            border-left: 4px solid #2196F3;
+            border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background-color 0.2s;
+        }
+
+        .batch-item:hover {
+            background: #e3f2fd;
+        }
+
+        .batch-info {
+            flex: 1;
+        }
+
+        .batch-code {
+            font-weight: bold;
+            font-size: 16px;
+            color: #1976D2;
+        }
+
+        .batch-events {
+            color: #666;
+            font-size: 14px;
+            margin-top: 4px;
+        }
+
+        .batch-link {
+            padding: 8px 16px;
+            background-color: #2196F3;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 14px;
+            transition: background-color 0.2s;
+        }
+
+        .batch-link:hover {
+            background-color: #1976D2;
+        }
+
+        .zipcode-info {
+            background: #e7f3ff;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+
+        .zipcode-info-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 8px 0;
+        }
+
+        .zipcode-info-label {
+            font-weight: bold;
+            color: #555;
+        }
+
+        .zipcode-info-value {
+            color: #333;
+        }
+
+        .clickable-row {
+            cursor: pointer;
+        }
+
+        .clickable-row:hover {
+            background-color: #f5f5f5;
+        }
+
+        /* Map Styles */
+        #map {
+            height: 600px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin: 20px 0;
+        }
+
+        .map-container {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .map-legend {
+            background: white;
+            padding: 15px;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            line-height: 1.6;
+            font-size: 14px;
+        }
+
+        .map-legend h4 {
+            margin: 0 0 10px 0;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .legend-item {
+            margin: 5px 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .legend-color {
+            width: 30px;
+            height: 15px;
+            margin-right: 10px;
+            border-radius: 2px;
+        }
+
+        .map-controls {
+            background: white;
+            padding: 10px 15px;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            margin-bottom: 10px;
+        }
+
+        .map-controls label {
+            display: flex;
+            align-items: center;
+            margin: 5px 0;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .map-controls input[type="checkbox"] {
+            margin-right: 8px;
+            cursor: pointer;
+        }
+
+        .map-controls input[type="range"] {
+            width: 100%;
+            margin-top: 5px;
+        }
+
+        /* Custom marker cluster styles */
+        .marker-cluster-small {
+            background-color: rgba(40, 167, 69, 0.6);
+        }
+
+        .marker-cluster-small div {
+            background-color: rgba(40, 167, 69, 0.8);
+        }
+
+        .marker-cluster-medium {
+            background-color: rgba(255, 193, 7, 0.6);
+        }
+
+        .marker-cluster-medium div {
+            background-color: rgba(255, 193, 7, 0.8);
+        }
+
+        .marker-cluster-large {
+            background-color: rgba(220, 53, 69, 0.6);
+        }
+
+        .marker-cluster-large div {
+            background-color: rgba(220, 53, 69, 0.8);
+        }
+
+        @media (max-width: 768px) {
+            #map {
+                height: 400px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -194,6 +447,15 @@
         </div>
     </div>
 
+    <!-- Interactive Map -->
+    <div class="map-container">
+        <h2>Interactive Risk Map</h2>
+        <p style="color: #666; margin-bottom: 15px;">
+            Explore geographic distribution of adverse events. Click markers to view batch details.
+        </p>
+        <div id="map"></div>
+    </div>
+
     <!-- Chart: Top 20 Highest Risk Zipcodes -->
     <div class="chart-container">
         <h2>Top 20 Highest Risk ZIP Codes</h2>
@@ -234,6 +496,42 @@
         </table>
     </div>
 
+    <!-- Batch Details Modal -->
+    <div id="batchModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="close">&times;</span>
+                <h2>Batch Details for ZIP Code <span id="modalZipcode"></span></h2>
+            </div>
+            <div class="modal-body">
+                <div class="zipcode-info">
+                    <div class="zipcode-info-row">
+                        <span class="zipcode-info-label">Total Doses:</span>
+                        <span class="zipcode-info-value" id="modalTotalDoses">-</span>
+                    </div>
+                    <div class="zipcode-info-row">
+                        <span class="zipcode-info-label">Total Adverse Events:</span>
+                        <span class="zipcode-info-value" id="modalTotalEvents">-</span>
+                    </div>
+                    <div class="zipcode-info-row">
+                        <span class="zipcode-info-label">Adverse Events per 100K:</span>
+                        <span class="zipcode-info-value" id="modalRiskRate">-</span>
+                    </div>
+                    <div class="zipcode-info-row">
+                        <span class="zipcode-info-label">Risk Level:</span>
+                        <span class="zipcode-info-value" id="modalRiskLevel">-</span>
+                    </div>
+                </div>
+
+                <h3>Batches Used in This ZIP Code</h3>
+                <ul class="batch-list" id="batchList">
+                    <!-- Batch items will be inserted here -->
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script src="./LeafletMapInitializer.js"></script>
     <script src="./ZipcodeRiskMapView.js"></script>
 </body>
 </html>

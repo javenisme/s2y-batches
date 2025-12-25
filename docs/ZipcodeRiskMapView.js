@@ -7,10 +7,13 @@ let zipcodeData = null;
 let dataTable = null;
 let topRiskChart = null;
 let scatterChart = null;
+let mapInstance = null;
 
 // Load data and initialize visualizations
 $(document).ready(function() {
     loadData();
+    initializeModal();
+    checkUrlParameters();
 });
 
 async function loadData() {
@@ -28,9 +31,12 @@ async function loadData() {
 
         // Initialize visualizations
         updateStatsCards(stats);
+        initializeMap();
         initializeTable();
         createTopRiskChart();
         createScatterChart();
+
+        console.log(`Data loaded: ${zipcodeData.length} zipcodes`);
 
     } catch (error) {
         console.error('Error loading data:', error);
@@ -64,6 +70,20 @@ function updateStatsCards(stats) {
     document.getElementById('highRiskPct').textContent = `${stats.risk_distribution.HIGH.percentage}%`;
 }
 
+function initializeMap() {
+    const startTime = performance.now();
+
+    // Initialize Leaflet map
+    const mapInitializer = new LeafletMapInitializer('map', zipcodeData);
+    mapInstance = mapInitializer.initialize();
+
+    const endTime = performance.now();
+    console.log(`Map initialized in ${(endTime - startTime).toFixed(2)}ms with ${zipcodeData.length} zipcodes`);
+
+    // Store map initializer globally for filtering
+    window.mapInitializer = mapInitializer;
+}
+
 function initializeTable() {
     // Populate table
     const tbody = document.getElementById('tableBody');
@@ -71,6 +91,7 @@ function initializeTable() {
 
     zipcodeData.forEach(row => {
         const tr = document.createElement('tr');
+        tr.className = 'clickable-row';
         tr.innerHTML = `
             <td>${row.zipcode}</td>
             <td><span class="risk-${row.risk_category}">${row.risk_category}</span></td>
@@ -80,6 +101,16 @@ function initializeTable() {
             <td>${row.num_batches}</td>
             <td>${row.num_providers}</td>
         `;
+
+        // Add click event to row
+        tr.addEventListener('click', function() {
+            showBatchDetailsModal(row);
+            // Focus map on this zipcode
+            if (window.mapInitializer && row.lat && row.lng) {
+                window.mapInitializer.focusOnZipcode(row.zipcode);
+            }
+        });
+
         tbody.appendChild(tr);
     });
 
@@ -247,10 +278,137 @@ function filterTable(riskLevel) {
     });
     event.target.classList.add('active');
 
-    // Apply filter
+    // Apply filter to table
     if (riskLevel === 'ALL') {
         dataTable.search('').draw();
     } else {
         dataTable.column(1).search(`^${riskLevel}$`, true, false).draw();
     }
+
+    // Apply filter to map
+    if (window.mapInitializer) {
+        window.mapInitializer.filterByRiskLevel(riskLevel);
+    }
 }
+
+// Modal functions
+function initializeModal() {
+    const modal = document.getElementById('batchModal');
+    const closeBtn = document.querySelector('.close');
+
+    // Close modal when clicking the X
+    closeBtn.onclick = function() {
+        modal.style.display = 'none';
+    };
+
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+        if (event.target === modal) {
+            modal.style.display = 'none';
+        }
+    };
+
+    // Close modal with Escape key
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape' && modal.style.display === 'block') {
+            modal.style.display = 'none';
+        }
+    });
+}
+
+function showBatchDetailsModal(zipData) {
+    const modal = document.getElementById('batchModal');
+
+    // Set zipcode in modal title
+    document.getElementById('modalZipcode').textContent = zipData.zipcode;
+
+    // Set zipcode statistics
+    document.getElementById('modalTotalDoses').textContent = zipData.total_doses.toLocaleString();
+    document.getElementById('modalTotalEvents').textContent = zipData.total_adverse_events.toFixed(2);
+    document.getElementById('modalRiskRate').textContent = zipData.adverse_events_per_100k.toFixed(1);
+
+    const riskLevelSpan = document.getElementById('modalRiskLevel');
+    riskLevelSpan.textContent = zipData.risk_category;
+    riskLevelSpan.className = `risk-${zipData.risk_category}`;
+
+    // Parse and display batch list
+    let batchList = [];
+    try {
+        // top_batches is stored as a JSON string in the data
+        batchList = JSON.parse(zipData.top_batches);
+    } catch (error) {
+        console.error('Error parsing batch data:', error);
+        batchList = [];
+    }
+
+    // Build batch list HTML
+    const batchListEl = document.getElementById('batchList');
+    batchListEl.innerHTML = '';
+
+    if (batchList.length === 0) {
+        batchListEl.innerHTML = '<li style="color: #666; padding: 10px;">No batch data available</li>';
+    } else {
+        batchList.forEach(batch => {
+            const li = document.createElement('li');
+            li.className = 'batch-item';
+            li.innerHTML = `
+                <div class="batch-info">
+                    <div class="batch-code">${batch.batch}</div>
+                    <div class="batch-events">Adverse Events: ${batch.adverse_events.toFixed(2)}</div>
+                </div>
+                <a href="batchCodes.html?batch=${encodeURIComponent(batch.batch)}"
+                   target="_blank"
+                   class="batch-link">
+                    View Details
+                </a>
+            `;
+            batchListEl.appendChild(li);
+        });
+    }
+
+    // Show the modal
+    modal.style.display = 'block';
+}
+
+function checkUrlParameters() {
+    // Check if URL contains zipcode parameter
+    const urlParams = new URLSearchParams(window.location.search);
+    const zipcode = urlParams.get('zipcode');
+
+    if (zipcode && zipcodeData) {
+        // Find the zipcode in data
+        const zipData = zipcodeData.find(row => row.zipcode === zipcode);
+        if (zipData) {
+            // Show modal for this zipcode
+            showBatchDetailsModal(zipData);
+
+            // Focus map on this zipcode
+            if (window.mapInitializer) {
+                window.mapInitializer.focusOnZipcode(zipcode);
+            }
+
+            // Optionally scroll to and highlight the row in the table
+            setTimeout(() => {
+                if (dataTable) {
+                    // Search for the zipcode to filter the table
+                    dataTable.search(zipcode).draw();
+                }
+            }, 500);
+        }
+    }
+}
+
+// Global function to show batch details from map popup
+window.showBatchDetailsFromMap = function(zipcode) {
+    const zipData = zipcodeData.find(row => row.zipcode === zipcode);
+    if (zipData) {
+        showBatchDetailsModal(zipData);
+
+        // Scroll to and highlight the row in the table
+        if (dataTable) {
+            dataTable.search(zipcode).draw();
+            // Scroll to table
+            document.querySelector('.table-container').scrollIntoView({ behavior: 'smooth' });
+        }
+    }
+};
