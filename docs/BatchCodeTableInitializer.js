@@ -1,5 +1,7 @@
 class BatchCodeTableInitializer {
 
+    #chartInstances = new Map();
+
     initialize({ batchCodeTableElement, showCountriesColumn, showDataTablesFilter }) {
         // FK-TODO: show "Loading.." message or spinning wheel.
         this.#loadBarChartDescriptions(showCountriesColumn)
@@ -27,7 +29,7 @@ class BatchCodeTableInitializer {
     }
 
     #createEmptyBatchCodeTable(batchCodeTableElement, showCountriesColumn, barChartDescriptions) {
-        return batchCodeTableElement.DataTable(
+        const table = batchCodeTableElement.DataTable(
             {
                 language:
                 {
@@ -96,6 +98,180 @@ class BatchCodeTableInitializer {
                         }
                     ]
             });
+
+        // Add row click handler to expand symptom details
+        batchCodeTableElement.on('click', 'tbody tr', (e) => {
+            const tr = $(e.currentTarget);
+            const row = table.row(tr);
+            const batchcode = row.data()[this.#getColumnIndex('Batch')];
+
+            if (row.child.isShown()) {
+                // Close the row with animation
+                tr.find('.batch-details-container').fadeOut(200, () => {
+                    row.child.hide();
+                    tr.removeClass('shown');
+
+                    // Cleanup: destroy DataTable if exists
+                    const histogramTableId = `#histogram-${batchcode}`;
+                    if ($.fn.DataTable.isDataTable(histogramTableId)) {
+                        $(histogramTableId).DataTable().destroy();
+                    }
+                });
+            } else {
+                // Open the row
+                const company = row.data()[this.#getColumnIndex('Company')];
+                row.child(this.#createDetailRow(batchcode, company)).show();
+                tr.addClass('shown');
+
+                // Load and display histogram data
+                this.#loadAndDisplayHistogram(batchcode, tr.next());
+            }
+        });
+
+        return table;
+    }
+
+    #createDetailRow(batchcode, company) {
+        return `
+            <div class="batch-details-container" style="padding: 20px; background: #f8f9fa;">
+                <h3 style="margin-top: 0;">Batch ${batchcode} (${company}) - Symptom Details</h3>
+                <div class="loading-message">Loading symptom data...</div>
+                <div class="chart-container" style="display: none;">
+                    <canvas id="chart-${batchcode}" style="max-height: 300px;"></canvas>
+                </div>
+                <div class="table-container" style="display: none; margin-top: 20px;">
+                    <table id="histogram-${batchcode}" class="display" style="width: 100%;">
+                        <thead>
+                            <tr>
+                                <th>Symptom</th>
+                                <th>Frequency</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        `;
+    }
+
+    #loadAndDisplayHistogram(batchcode, detailRow) {
+        HistoDescrsProvider.getHistoDescrs(batchcode)
+            .then(histoDescrs => {
+                const container = detailRow.find('.batch-details-container');
+                container.find('.loading-message').hide();
+
+                // Show and populate chart
+                const chartContainer = container.find('.chart-container');
+                chartContainer.show();
+                this.#createAdverseReactionChart(batchcode, histoDescrs);
+
+                // Show and populate symptom table
+                const tableContainer = container.find('.table-container');
+                tableContainer.show();
+                this.#createHistogramTable(batchcode, histoDescrs);
+            })
+            .catch(error => {
+                console.error('Error loading histogram data:', error);
+                const container = detailRow.find('.batch-details-container');
+                container.find('.loading-message').text('Error loading symptom data. Please try again.');
+            });
+    }
+
+    #createAdverseReactionChart(batchcode, histoDescrs) {
+        const canvas = document.getElementById(`chart-${batchcode}`);
+        if (!canvas) return;
+
+        // Destroy existing chart if it exists
+        if (this.#chartInstances.has(batchcode)) {
+            this.#chartInstances.get(batchcode).destroy();
+        }
+
+        const ctx = canvas.getContext('2d');
+        const chart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: [
+                    'Deaths',
+                    'Disabilities',
+                    'Life-Threatening',
+                    'Hospitalizations',
+                    'Other Events'
+                ],
+                datasets: [{
+                    label: 'Adverse Events',
+                    data: [
+                        histoDescrs['Deaths'],
+                        histoDescrs['Disabilities'],
+                        histoDescrs['Life-Threatening Illnesses'],
+                        histoDescrs['Hospitalizations'],
+                        histoDescrs['Adverse Reaction Reports'] - (
+                            histoDescrs['Deaths'] +
+                            histoDescrs['Disabilities'] +
+                            histoDescrs['Life-Threatening Illnesses'] +
+                            histoDescrs['Hospitalizations']
+                        )
+                    ],
+                    backgroundColor: [
+                        '#dc3545',
+                        '#fd7e14',
+                        '#ffc107',
+                        '#17a2b8',
+                        '#6c757d'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0
+                        }
+                    }
+                }
+            }
+        });
+
+        // Store chart instance for cleanup
+        this.#chartInstances.set(batchcode, chart);
+    }
+
+    #createHistogramTable(batchcode, histoDescrs) {
+        const histogram = histoDescrs.histogram;
+        const symptomFrequencyPairs = Object.entries(histogram)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 50); // Show top 50 symptoms
+
+        const sumFrequencies = symptomFrequencyPairs.reduce((sum, pair) => sum + pair[1], 0);
+
+        $(`#histogram-${batchcode}`).DataTable({
+            data: symptomFrequencyPairs,
+            pageLength: 10,
+            order: [[1, "desc"]],
+            columnDefs: [
+                {
+                    targets: 1,
+                    render: (frequency) => {
+                        const barWidth = (frequency / sumFrequencies * 100).toFixed(1);
+                        return `
+                            <div style="display: flex; align-items: center;">
+                                <span style="min-width: 40px;">${frequency}</span>
+                                <div style="flex: 1; margin-left: 10px; background: #e9ecef; border-radius: 3px;">
+                                    <div style="background: #007bff; height: 20px; width: ${barWidth}%; border-radius: 3px;"></div>
+                                </div>
+                            </div>
+                        `;
+                    }
+                }
+            ]
+        });
     }
 
     #getColumnIndex(columnName) {

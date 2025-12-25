@@ -40,14 +40,28 @@ class HistogramTable {
                             ]
                         },
                         {
-                            render: frequency =>
-                                NumberWithBarElementFactory
-                                    .createNumberWithBarElement(
-                                        {
-                                            number: frequency,
-                                            barLenInPercent: frequency / this.#sumFrequencies * 100
-                                        })
-                                    .outerHTML,
+                            render: frequency => {
+                                const barLenInPercent = frequency / this.#sumFrequencies * 100;
+                                // Color code based on frequency
+                                let color = '#4caf50'; // Low frequency - green
+                                if (barLenInPercent > 10) {
+                                    color = '#ff9800'; // Medium frequency - orange
+                                }
+                                if (barLenInPercent > 20) {
+                                    color = '#f44336'; // High frequency - red
+                                }
+
+                                return `
+                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                        <span style="min-width: 50px; font-weight: bold;">${frequency}</span>
+                                        <div style="flex: 1; background: #e0e0e0; border-radius: 4px; height: 24px; position: relative; overflow: hidden;">
+                                            <div style="background: ${color}; height: 100%; width: ${barLenInPercent}%; border-radius: 4px; transition: width 0.3s ease;">
+                                            </div>
+                                        </div>
+                                        <span style="min-width: 50px; font-size: 0.9em; color: #666;">${barLenInPercent.toFixed(1)}%</span>
+                                    </div>
+                                `;
+                            },
                             targets: [this.#getColumnIndex('Frequency')]
                         }
                     ]

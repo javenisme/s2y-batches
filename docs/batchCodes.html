@@ -15,6 +15,57 @@
   </script>
 <link href="https://cdn.datatables.net/1.13.1/css/jquery.dataTables.css" rel="stylesheet" type="text/css"/>
 <link href="forkMeOnGitHub.css" rel="stylesheet" type="text/css"/>
+<style>
+    /* Batch row expansion styles */
+    #batchCodeTable tbody tr {
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+
+    #batchCodeTable tbody tr:hover {
+        background-color: #f5f5f5;
+    }
+
+    #batchCodeTable tbody tr.shown {
+        background-color: #e3f2fd;
+    }
+
+    .batch-details-container {
+        animation: slideDown 0.3s ease-out;
+    }
+
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            max-height: 0;
+        }
+        to {
+            opacity: 1;
+            max-height: 1000px;
+        }
+    }
+
+    .loading-message {
+        color: #666;
+        font-style: italic;
+        padding: 10px;
+    }
+
+    /* Improve chart container */
+    .chart-container {
+        background: white;
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    /* Improve table appearance in expanded row */
+    .table-container table {
+        background: white;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+</style>
 <script crossorigin="anonymous" integrity="sha512-T5Bneq9hePRO8JR0S/0lQ7gdW+ceLThvC80UjwkMRz+8q+4DARVZ4dqKoyENC7FcYresjfJ6ubaOgIE35irf4w==" referrerpolicy="no-referrer" src="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.5.1/nouislider.min.js"></script>
 <link crossorigin="anonymous" href="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.5.1/nouislider.css" integrity="sha512-MKxcSu/LDtbIYHBNAWUQwfB3iVoG9xeMCm32QV5hZ/9lFaQZJVaXfz9aFa0IZExWzCpm7OWvp9zq9gVip/nLMg==" referrerpolicy="no-referrer" rel="stylesheet"/>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
@@ -25,6 +76,7 @@
 <script src="./UrlUtils.js"></script>
 <script src="./DataTablesFilter.js"></script>
 <script src="./ColumnSearch.js"></script>
+<script src="./HistoDescrsProvider.js"></script>
 <script src="./BatchCodeTableInitializer.js"></script>
 <script src="./BatchcodeByCountryBarChartView.js"></script>
 <script src="./BatchcodeByCountryBarChart.js"></script>
@@ -44,6 +96,9 @@
 <h1>Batch Codes of Coronavirus 2019 Vaccines</h1>
 <p>
     By Craig Paardekooper
+  </p>
+<p style="background: #e3f2fd; padding: 10px; border-radius: 5px; border-left: 4px solid #2196F3;">
+    <strong>💡 Tip:</strong> Click on any row to expand and view detailed symptom information for that batch.
   </p>
 <nav style="text-align: center; margin: 20px 0; padding: 15px; background: #f0f0f0; border-radius: 8px;">
     <a href="batchCodes.html" style="margin: 0 15px; padding: 8px 16px; text-decoration: none; color: #333; font-weight: bold;">📊 Batch Codes</a>

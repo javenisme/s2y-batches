@@ -37,8 +37,7 @@ class AdverseReactionReportsChartView {
                 'Other Adverse Events'
             ],
             datasets: [{
-                // FK-TODO: refactor
-                label: 'Batch ' + ADRDescr['batchcode'],
+                label: 'Number of Reports',
                 data: [
                     ADRDescr['Deaths'],
                     ADRDescr['Disabilities'],
@@ -46,7 +45,15 @@ class AdverseReactionReportsChartView {
                     ADRDescr['Hospitalizations'],
                     ADRDescr['Adverse Reaction Reports'] - (ADRDescr['Deaths'] + ADRDescr['Disabilities'] + ADRDescr['Life-Threatening Illnesses'] + ADRDescr['Hospitalizations'])
                 ],
-                backgroundColor: '#1a73e8'
+                backgroundColor: [
+                    '#dc3545',  // Deaths - red
+                    '#fd7e14',  // Disabilities - orange
+                    '#ffc107',  // Life-Threatening - yellow
+                    '#17a2b8',  // Hospitalizations - cyan
+                    '#6c757d'   // Other - gray
+                ],
+                borderWidth: 0,
+                borderRadius: 4
             }]
         };
     }
