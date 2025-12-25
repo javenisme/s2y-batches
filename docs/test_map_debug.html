@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <title>Map Debug Test</title>
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+    <!-- Leaflet.markercluster CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+        }
+        #map {
+            height: 600px;
+            width: 100%;
+            border: 2px solid #333;
+        }
+        #debug {
+            background: #f0f0f0;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+        .success {
+            color: green;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>地图调试诊断页面</h1>
+
+    <div id="debug">
+        <h3>诊断信息:</h3>
+        <div id="diagnostics"></div>
+    </div>
+
+    <div id="map"></div>
+
+    <!-- jQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <!-- Leaflet.heat -->
+    <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+
+    <!-- Leaflet.markercluster JS -->
+    <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+
+    <!-- LeafletMapInitializer -->
+    <script src="./LeafletMapInitializer.js"></script>
+
+    <script>
+        const diagnostics = document.getElementById('diagnostics');
+
+        function log(message, isError = false) {
+            const p = document.createElement('p');
+            p.className = isError ? 'error' : 'success';
+            p.textContent = message;
+            diagnostics.appendChild(p);
+            console.log(message);
+        }
+
+        // Step 1: Check if Leaflet is loaded
+        if (typeof L !== 'undefined') {
+            log('✓ Leaflet.js 加载成功 (版本: ' + L.version + ')');
+        } else {
+            log('✗ Leaflet.js 加载失败', true);
+        }
+
+        // Step 2: Check if Leaflet.heat is loaded
+        if (typeof L.heatLayer !== 'undefined') {
+            log('✓ Leaflet.heat 加载成功');
+        } else {
+            log('✗ Leaflet.heat 加载失败', true);
+        }
+
+        // Step 3: Check if Leaflet.markercluster is loaded
+        if (typeof L.markerClusterGroup !== 'undefined') {
+            log('✓ Leaflet.markercluster 加载成功');
+        } else {
+            log('✗ Leaflet.markercluster 加载失败', true);
+        }
+
+        // Step 4: Check if LeafletMapInitializer is loaded
+        if (typeof LeafletMapInitializer !== 'undefined') {
+            log('✓ LeafletMapInitializer 类加载成功');
+        } else {
+            log('✗ LeafletMapInitializer 类加载失败', true);
+        }
+
+        // Step 5: Load data and initialize map
+        async function testMap() {
+            try {
+                log('正在加载数据...');
+
+                const response = await fetch('./data/zipcodeRiskMap/ZipcodeRiskSummary.json');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const summaryJson = await response.json();
+                log('✓ 数据加载成功');
+
+                // Parse data
+                const zipcodeData = [];
+                for (let i = 0; i < summaryJson.data.length; i++) {
+                    const row = {};
+                    for (let j = 0; j < summaryJson.columns.length; j++) {
+                        row[summaryJson.columns[j]] = summaryJson.data[i][j];
+                    }
+                    zipcodeData.push(row);
+                }
+
+                log(`✓ 数据解析成功: ${zipcodeData.length} 条记录`);
+
+                // Check for coordinates
+                const withCoords = zipcodeData.filter(d => d.lat && d.lng);
+                log(`✓ 带坐标的记录: ${withCoords.length} / ${zipcodeData.length}`);
+
+                if (withCoords.length > 0) {
+                    log(`✓ 示例坐标: lat=${withCoords[0].lat}, lng=${withCoords[0].lng}`);
+                }
+
+                // Initialize map
+                log('正在初始化地图...');
+
+                if (typeof LeafletMapInitializer === 'undefined') {
+                    throw new Error('LeafletMapInitializer 未定义');
+                }
+
+                const mapInitializer = new LeafletMapInitializer('map', zipcodeData);
+                const map = mapInitializer.initialize();
+
+                log('✓ 地图初始化成功!');
+
+            } catch (error) {
+                log(`✗ 错误: ${error.message}`, true);
+                console.error('详细错误:', error);
+            }
+        }
+
+        // Run test when page loads
+        $(document).ready(function() {
+            log('开始测试...');
+            testMap();
+        });
+    </script>
+</body>
+</html>
