@@ -1,0 +1,1016 @@
+openapi: 3.0.3
+info:
+  title: Long COVID Risk Assessment System API
+  description: |
+    REST API for LCRAS - providing risk assessment, symptom pattern analysis,
+    and batch comparison capabilities based on VAERS data.
+
+    ## Features
+    - **Risk Assessment**: Calculate personalized long COVID risk scores
+    - **Symptom Analysis**: Discover symptom clusters and associations
+    - **Batch Comparison**: Compare safety profiles across vaccine batches
+    - **ML-Powered**: XGBoost models, clustering, association rule mining
+
+    ## Rate Limits
+    - Public endpoints: 100 requests/minute per IP
+    - Future authenticated endpoints: 1000 requests/minute
+
+  version: 1.0.0
+  contact:
+    name: LCRAS Team
+    email: api@lcras.example.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: https://api.lcras.example.com/api/v1
+    description: Production server
+  - url: http://localhost:8000/api/v1
+    description: Development server
+
+tags:
+  - name: risk
+    description: Risk assessment endpoints
+  - name: symptom
+    description: Symptom pattern analysis endpoints
+  - name: batch
+    description: Batch data and comparison endpoints
+  - name: analytics
+    description: Usage analytics and statistics
+  - name: health
+    description: Health check endpoints
+
+paths:
+  /health:
+    get:
+      summary: Health check
+      tags:
+        - health
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "ok"
+                  version:
+                    type: string
+                    example: "1.0.0"
+                  timestamp:
+                    type: string
+                    format: date-time
+
+  /risk/assess:
+    post:
+      summary: Calculate personalized risk score
+      tags:
+        - risk
+      description: |
+        Calculates a personalized long COVID risk score for a specific vaccine batch
+        based on user profile. Returns risk score (0-10), risk level, contributing factors,
+        and comparative statistics.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RiskAssessmentRequest'
+            examples:
+              basic:
+                summary: Basic risk assessment
+                value:
+                  batch_code: "EN6201"
+                  user_profile:
+                    age: 45
+                    sex: "M"
+              detailed:
+                summary: Detailed assessment with conditions
+                value:
+                  batch_code: "EN6201"
+                  user_profile:
+                    age: 45
+                    sex: "M"
+                    pre_existing_conditions:
+                      - "hypertension"
+                      - "diabetes"
+                    previous_covid_infection: true
+                    dose_number: 2
+      responses:
+        '200':
+          description: Risk assessment calculated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RiskAssessmentResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          description: Batch code not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Batch not found"
+                message: "Batch code EN9999 not found in database"
+        '429':
+          $ref: '#/components/responses/RateLimitExceeded'
+
+  /risk/batch/{batch_code}:
+    get:
+      summary: Get batch risk statistics
+      tags:
+        - risk
+      description: |
+        Retrieves aggregate risk statistics for a vaccine batch including
+        adverse event counts, severity percentages, and top symptoms.
+      parameters:
+        - name: batch_code
+          in: path
+          required: true
+          description: Vaccine batch code (e.g., EN6201)
+          schema:
+            type: string
+            example: "EN6201"
+      responses:
+        '200':
+          description: Batch statistics retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BatchRiskStats'
+        '404':
+          description: Batch code not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          $ref: '#/components/responses/RateLimitExceeded'
+
+  /symptom/clusters:
+    get:
+      summary: Get symptom clusters
+      tags:
+        - symptom
+      description: |
+        Retrieves identified symptom clusters from K-Means clustering analysis.
+        Optionally filter by batch code or minimum cluster size.
+      parameters:
+        - name: batch_code
+          in: query
+          required: false
+          description: Filter clusters by batch code
+          schema:
+            type: string
+            example: "EN6201"
+        - name: min_size
+          in: query
+          required: false
+          description: Minimum number of patients in cluster
+          schema:
+            type: integer
+            default: 50
+            minimum: 1
+      responses:
+        '200':
+          description: Symptom clusters retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SymptomClustersResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '429':
+          $ref: '#/components/responses/RateLimitExceeded'
+
+  /symptom/associations:
+    get:
+      summary: Get symptom association rules
+      tags:
+        - symptom
+      description: |
+        Retrieves symptom association rules discovered via Apriori algorithm.
+        Rules show which symptoms frequently co-occur with specified confidence and lift metrics.
+      parameters:
+        - name: batch_code
+          in: query
+          required: true
+          description: Batch code to analyze
+          schema:
+            type: string
+            example: "EN6201"
+        - name: min_confidence
+          in: query
+          required: false
+          description: Minimum confidence threshold (0.0-1.0)
+          schema:
+            type: number
+            format: float
+            default: 0.5
+            minimum: 0
+            maximum: 1
+        - name: min_lift
+          in: query
+          required: false
+          description: Minimum lift threshold
+          schema:
+            type: number
+            format: float
+            default: 1.5
+            minimum: 0
+      responses:
+        '200':
+          description: Association rules retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssociationRulesResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '429':
+          $ref: '#/components/responses/RateLimitExceeded'
+
+  /symptom/network/{batch_code}:
+    get:
+      summary: Get symptom co-occurrence network
+      tags:
+        - symptom
+      description: |
+        Retrieves symptom co-occurrence network data for graph visualization.
+        Returns nodes (symptoms) and edges (co-occurrence relationships)
+        suitable for D3.js force-directed graph.
+      parameters:
+        - name: batch_code
+          in: path
+          required: true
+          description: Batch code to analyze
+          schema:
+            type: string
+            example: "EN6201"
+        - name: min_edge_weight
+          in: query
+          required: false
+          description: Minimum edge weight (co-occurrence frequency)
+          schema:
+            type: number
+            format: float
+            default: 0.1
+            minimum: 0
+            maximum: 1
+      responses:
+        '200':
+          description: Network data retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SymptomNetworkResponse'
+        '404':
+          description: Batch code not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          $ref: '#/components/responses/RateLimitExceeded'
+
+  /batch/search:
+    get:
+      summary: Search batches
+      tags:
+        - batch
+      description: |
+        Search vaccine batches with various filters. Supports filtering by
+        manufacturer, risk score range, severity thresholds, and date ranges.
+      parameters:
+        - name: manufacturer
+          in: query
+          required: false
+          description: Filter by manufacturer
+          schema:
+            type: string
+            enum:
+              - Pfizer
+              - Moderna
+              - Janssen
+            example: "Pfizer"
+        - name: risk_score_min
+          in: query
+          required: false
+          description: Minimum risk score
+          schema:
+            type: number
+            format: float
+            minimum: 0
+            maximum: 10
+        - name: risk_score_max
+          in: query
+          required: false
+          description: Maximum risk score
+          schema:
+            type: number
+            format: float
+            minimum: 0
+            maximum: 10
+        - name: min_reports
+          in: query
+          required: false
+          description: Minimum number of adverse event reports
+          schema:
+            type: integer
+            minimum: 0
+            default: 10
+        - name: limit
+          in: query
+          required: false
+          description: Maximum number of results
+          schema:
+            type: integer
+            default: 50
+            minimum: 1
+            maximum: 500
+        - name: offset
+          in: query
+          required: false
+          description: Pagination offset
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
+      responses:
+        '200':
+          description: Batches retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BatchSearchResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '429':
+          $ref: '#/components/responses/RateLimitExceeded'
+
+  /batch/compare:
+    post:
+      summary: Compare multiple batches
+      tags:
+        - batch
+      description: |
+        Compare safety profiles of multiple vaccine batches side-by-side.
+        Returns comparative statistics and statistical significance tests.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BatchCompareRequest'
+      responses:
+        '200':
+          description: Comparison completed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BatchCompareResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '429':
+          $ref: '#/components/responses/RateLimitExceeded'
+
+  /batch/{batch_code}/timeline:
+    get:
+      summary: Get batch report timeline
+      tags:
+        - batch
+      description: |
+        Retrieves time-series data of adverse event reports for a batch.
+        Useful for visualizing temporal patterns.
+      parameters:
+        - name: batch_code
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: granularity
+          in: query
+          required: false
+          description: Time granularity for aggregation
+          schema:
+            type: string
+            enum:
+              - day
+              - week
+              - month
+            default: week
+      responses:
+        '200':
+          description: Timeline data retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TimelineResponse'
+        '404':
+          description: Batch code not found
+        '429':
+          $ref: '#/components/responses/RateLimitExceeded'
+
+  /analytics/top-batches:
+    get:
+      summary: Get top batches by metric
+      tags:
+        - analytics
+      description: |
+        Retrieves top N batches ranked by specified metric (deaths, risk score, etc.)
+      parameters:
+        - name: metric
+          in: query
+          required: true
+          description: Metric to rank by
+          schema:
+            type: string
+            enum:
+              - deaths
+              - disabilities
+              - risk_score
+              - total_reports
+              - lethality_pct
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 10
+            minimum: 1
+            maximum: 100
+      responses:
+        '200':
+          description: Top batches retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TopBatchesResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '429':
+          $ref: '#/components/responses/RateLimitExceeded'
+
+  /analytics/summary:
+    get:
+      summary: Get system-wide summary statistics
+      tags:
+        - analytics
+      description: |
+        Retrieves high-level summary statistics across all batches and reports.
+      responses:
+        '200':
+          description: Summary statistics retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SummaryStatsResponse'
+        '429':
+          $ref: '#/components/responses/RateLimitExceeded'
+
+components:
+  schemas:
+    RiskAssessmentRequest:
+      type: object
+      required:
+        - batch_code
+        - user_profile
+      properties:
+        batch_code:
+          type: string
+          description: Vaccine batch code
+          example: "EN6201"
+        user_profile:
+          $ref: '#/components/schemas/UserProfile'
+
+    UserProfile:
+      type: object
+      required:
+        - age
+        - sex
+      properties:
+        age:
+          type: integer
+          minimum: 0
+          maximum: 120
+          example: 45
+        sex:
+          type: string
+          enum:
+            - M
+            - F
+            - U
+          example: "M"
+        pre_existing_conditions:
+          type: array
+          items:
+            type: string
+          example:
+            - "hypertension"
+            - "diabetes"
+        previous_covid_infection:
+          type: boolean
+          default: false
+        dose_number:
+          type: integer
+          minimum: 1
+          maximum: 5
+          example: 2
+
+    RiskAssessmentResponse:
+      type: object
+      properties:
+        batch_code:
+          type: string
+          example: "EN6201"
+        manufacturer:
+          type: string
+          example: "Pfizer"
+        risk_score:
+          type: number
+          format: float
+          description: Risk score from 0 (lowest) to 10 (highest)
+          example: 7.2
+        risk_level:
+          type: string
+          enum:
+            - Low
+            - Medium
+            - High
+          example: "Medium"
+        confidence:
+          type: number
+          format: float
+          description: Model confidence (0.0-1.0)
+          example: 0.85
+        risk_factors:
+          type: array
+          items:
+            $ref: '#/components/schemas/RiskFactor'
+        comparative_stats:
+          $ref: '#/components/schemas/ComparativeStats'
+        timestamp:
+          type: string
+          format: date-time
+
+    RiskFactor:
+      type: object
+      properties:
+        factor:
+          type: string
+          example: "Age group 40-50"
+        impact:
+          type: string
+          description: Contribution to risk score
+          example: "+1.5"
+        description:
+          type: string
+          example: "Slightly elevated risk in this age group"
+
+    ComparativeStats:
+      type: object
+      properties:
+        batch_avg_severity:
+          type: number
+          format: float
+          example: 6.5
+        global_avg_severity:
+          type: number
+          format: float
+          example: 4.2
+        percentile:
+          type: integer
+          description: Percentile rank compared to all batches
+          example: 75
+
+    BatchRiskStats:
+      type: object
+      properties:
+        batch_code:
+          type: string
+          example: "EN6201"
+        manufacturer:
+          type: string
+          example: "Pfizer"
+        total_reports:
+          type: integer
+          example: 1250
+        deaths:
+          type: integer
+          example: 45
+        disabilities:
+          type: integer
+          example: 120
+        life_threatening:
+          type: integer
+          example: 80
+        hospitalizations:
+          type: integer
+          example: 300
+        severe_reports_pct:
+          type: number
+          format: float
+          example: 43.6
+        lethality_pct:
+          type: number
+          format: float
+          example: 3.6
+        risk_score:
+          type: number
+          format: float
+          example: 7.2
+        top_symptoms:
+          type: array
+          items:
+            $ref: '#/components/schemas/SymptomFrequency'
+        first_report_date:
+          type: string
+          format: date
+        last_report_date:
+          type: string
+          format: date
+
+    SymptomFrequency:
+      type: object
+      properties:
+        name:
+          type: string
+          example: "Chest pain"
+        frequency:
+          type: integer
+          example: 342
+        percentage:
+          type: number
+          format: float
+          example: 27.4
+
+    SymptomClustersResponse:
+      type: object
+      properties:
+        clusters:
+          type: array
+          items:
+            $ref: '#/components/schemas/SymptomCluster'
+        total_clusters:
+          type: integer
+          example: 8
+        model_version:
+          type: string
+          example: "v1.2.0"
+        last_updated:
+          type: string
+          format: date-time
+
+    SymptomCluster:
+      type: object
+      properties:
+        cluster_id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "Cardiovascular Cluster"
+        description:
+          type: string
+          example: "Symptoms related to heart and blood vessels"
+        symptoms:
+          type: array
+          items:
+            type: string
+          example:
+            - "Chest pain"
+            - "Palpitations"
+            - "Dyspnea"
+        patient_count:
+          type: integer
+          example: 450
+        avg_severity:
+          type: number
+          format: float
+          example: 7.8
+        batches_affected:
+          type: array
+          items:
+            type: string
+          example:
+            - "EN6201"
+            - "EN5318"
+
+    AssociationRulesResponse:
+      type: object
+      properties:
+        rules:
+          type: array
+          items:
+            $ref: '#/components/schemas/AssociationRule'
+        batch_code:
+          type: string
+          example: "EN6201"
+        total_rules:
+          type: integer
+          example: 45
+
+    AssociationRule:
+      type: object
+      properties:
+        antecedent:
+          type: array
+          items:
+            type: string
+          example:
+            - "Headache"
+            - "Fatigue"
+        consequent:
+          type: array
+          items:
+            type: string
+          example:
+            - "Chest pain"
+        support:
+          type: number
+          format: float
+          description: Frequency of itemset in transactions
+          example: 0.15
+        confidence:
+          type: number
+          format: float
+          description: Probability of consequent given antecedent
+          example: 0.72
+        lift:
+          type: number
+          format: float
+          description: Strength of association
+          example: 2.3
+        interpretation:
+          type: string
+          example: "If a patient has Headache AND Fatigue, there is a 72% chance they also have Chest pain"
+
+    SymptomNetworkResponse:
+      type: object
+      properties:
+        nodes:
+          type: array
+          items:
+            $ref: '#/components/schemas/NetworkNode'
+        edges:
+          type: array
+          items:
+            $ref: '#/components/schemas/NetworkEdge'
+        batch_code:
+          type: string
+          example: "EN6201"
+
+    NetworkNode:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "Headache"
+        size:
+          type: integer
+          description: Frequency count
+          example: 342
+        category:
+          type: string
+          example: "Neurological"
+
+    NetworkEdge:
+      type: object
+      properties:
+        source:
+          type: string
+          example: "Headache"
+        target:
+          type: string
+          example: "Chest pain"
+        weight:
+          type: number
+          format: float
+          description: Co-occurrence frequency (0.0-1.0)
+          example: 0.45
+
+    BatchSearchResponse:
+      type: object
+      properties:
+        batches:
+          type: array
+          items:
+            $ref: '#/components/schemas/BatchSummary'
+        total_count:
+          type: integer
+          example: 150
+        limit:
+          type: integer
+          example: 50
+        offset:
+          type: integer
+          example: 0
+
+    BatchSummary:
+      type: object
+      properties:
+        batch_code:
+          type: string
+        manufacturer:
+          type: string
+        risk_score:
+          type: number
+          format: float
+        total_reports:
+          type: integer
+        deaths:
+          type: integer
+        severe_reports_pct:
+          type: number
+          format: float
+
+    BatchCompareRequest:
+      type: object
+      required:
+        - batch_codes
+      properties:
+        batch_codes:
+          type: array
+          minItems: 2
+          maxItems: 10
+          items:
+            type: string
+          example:
+            - "EN6201"
+            - "EN5318"
+            - "FA4598"
+        metrics:
+          type: array
+          items:
+            type: string
+            enum:
+              - risk_score
+              - deaths
+              - top_symptoms
+              - clusters
+          default:
+            - risk_score
+            - deaths
+
+    BatchCompareResponse:
+      type: object
+      properties:
+        comparison:
+          type: array
+          items:
+            $ref: '#/components/schemas/BatchComparison'
+        statistical_tests:
+          $ref: '#/components/schemas/StatisticalTests'
+
+    BatchComparison:
+      type: object
+      properties:
+        batch_code:
+          type: string
+        manufacturer:
+          type: string
+        risk_score:
+          type: number
+          format: float
+        deaths:
+          type: integer
+        total_reports:
+          type: integer
+        dominant_cluster:
+          type: string
+
+    StatisticalTests:
+      type: object
+      properties:
+        risk_score_anova_p_value:
+          type: number
+          format: float
+          example: 0.003
+        significant_difference:
+          type: boolean
+          example: true
+
+    TimelineResponse:
+      type: object
+      properties:
+        batch_code:
+          type: string
+        granularity:
+          type: string
+        data_points:
+          type: array
+          items:
+            $ref: '#/components/schemas/TimelineDataPoint'
+
+    TimelineDataPoint:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date
+        report_count:
+          type: integer
+        deaths:
+          type: integer
+        severe_events:
+          type: integer
+
+    TopBatchesResponse:
+      type: object
+      properties:
+        metric:
+          type: string
+        batches:
+          type: array
+          items:
+            $ref: '#/components/schemas/RankedBatch'
+
+    RankedBatch:
+      type: object
+      properties:
+        rank:
+          type: integer
+        batch_code:
+          type: string
+        manufacturer:
+          type: string
+        metric_value:
+          type: number
+          format: float
+
+    SummaryStatsResponse:
+      type: object
+      properties:
+        total_batches:
+          type: integer
+          example: 1523
+        total_reports:
+          type: integer
+          example: 856234
+        total_deaths:
+          type: integer
+          example: 12456
+        avg_risk_score:
+          type: number
+          format: float
+          example: 4.2
+        manufacturers:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              batch_count:
+                type: integer
+              report_count:
+                type: integer
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Validation error"
+        message:
+          type: string
+          example: "Invalid batch code format"
+        details:
+          type: object
+          additionalProperties: true
+
+  responses:
+    BadRequest:
+      description: Invalid request parameters
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: "Validation error"
+            message: "Age must be between 0 and 120"
+
+    RateLimitExceeded:
+      description: Rate limit exceeded
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: "Rate limit exceeded"
+            message: "Maximum 100 requests per minute. Try again in 45 seconds."
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT authentication (future implementation)
+
+security: []  # No authentication required in current version
