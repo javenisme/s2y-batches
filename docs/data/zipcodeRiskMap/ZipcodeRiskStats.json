@@ -1,0 +1,26 @@
+{
+  "total_zipcodes": 17847,
+  "risk_distribution": {
+    "LOW": {
+      "count": 440,
+      "percentage": 2.5
+    },
+    "MEDIUM": {
+      "count": 13761,
+      "percentage": 77.1
+    },
+    "HIGH": {
+      "count": 3646,
+      "percentage": 20.4
+    }
+  },
+  "adverse_events_per_100k_stats": {
+    "mean": 41.0,
+    "median": 34.0,
+    "std": 25.2,
+    "min": 10.0,
+    "max": 973.3
+  },
+  "total_doses": 410324230.0,
+  "total_adverse_events": 229750.40999999997
+}

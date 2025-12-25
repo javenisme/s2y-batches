@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Zipcode Risk Map - Vaccine Distribution Analysis</title>
+
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-ERHYDH4P64"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'G-ERHYDH4P64');
+    </script>
+
+    <!-- DataTables CSS -->
+    <link href="https://cdn.datatables.net/1.13.1/css/jquery.dataTables.css" rel="stylesheet" type="text/css"/>
+
+    <!-- jQuery and DataTables JS -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script charset="utf8" src="https://cdn.datatables.net/1.13.1/js/jquery.dataTables.min.js" type="text/javascript"></script>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.2.0/dist/chart.umd.min.js"></script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+
+        .stats-container {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            min-width: 200px;
+            text-align: center;
+        }
+
+        .stat-card h3 {
+            margin: 0 0 10px 0;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .stat-card .value {
+            font-size: 32px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .stat-card.low {
+            border-left: 4px solid #28a745;
+        }
+
+        .stat-card.medium {
+            border-left: 4px solid #ffc107;
+        }
+
+        .stat-card.high {
+            border-left: 4px solid #dc3545;
+        }
+
+        .chart-container {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .table-container {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .filter-buttons {
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .filter-buttons button {
+            padding: 10px 20px;
+            margin: 0 5px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: opacity 0.3s;
+        }
+
+        .filter-buttons button:hover {
+            opacity: 0.8;
+        }
+
+        .filter-buttons button.active {
+            box-shadow: 0 0 0 3px rgba(0,0,0,0.2);
+        }
+
+        .btn-all { background-color: #6c757d; color: white; }
+        .btn-low { background-color: #28a745; color: white; }
+        .btn-medium { background-color: #ffc107; color: black; }
+        .btn-high { background-color: #dc3545; color: white; }
+
+        table.dataTable {
+            width: 100% !important;
+        }
+
+        .risk-LOW {
+            color: #28a745;
+            font-weight: bold;
+        }
+
+        .risk-MEDIUM {
+            color: #ff8c00;
+            font-weight: bold;
+        }
+
+        .risk-HIGH {
+            color: #dc3545;
+            font-weight: bold;
+        }
+
+        .info-box {
+            background: #e7f3ff;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+
+        .info-box p {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>🗺️ Zipcode Risk Map</h1>
+    <p style="text-align: center; color: #666;">
+        Geographic distribution of COVID-19 vaccine adverse events by ZIP code
+    </p>
+
+    <nav style="text-align: center; margin: 20px 0; padding: 15px; background: #f0f0f0; border-radius: 8px;">
+        <a href="batchCodes.html" style="margin: 0 15px; padding: 8px 16px; text-decoration: none; color: #333; font-weight: bold;">📊 Batch Codes</a>
+        <a href="ZipcodeRiskMap.html" style="margin: 0 15px; padding: 8px 16px; text-decoration: none; color: #2196F3; font-weight: bold; border-bottom: 2px solid #2196F3;">🗺️ Zipcode Risk Map</a>
+        <a href="HowBadIsMyBatch.html" style="margin: 0 15px; padding: 8px 16px; text-decoration: none; color: #333; font-weight: bold;">📈 Full Data Table</a>
+    </nav>
+
+    <div class="info-box">
+        <p><strong>About this analysis:</strong></p>
+        <p>This map shows adverse event rates per 100,000 doses by ZIP code, integrating Pfizer distribution data with VAERS reports.</p>
+        <p><strong>Risk categories:</strong> LOW (&lt;20), MEDIUM (20-50), HIGH (&gt;50) adverse events per 100K doses</p>
+    </div>
+
+    <!-- Statistics Dashboard -->
+    <div id="statsContainer" class="stats-container">
+        <div class="stat-card">
+            <h3>Total ZIP Codes</h3>
+            <div class="value" id="totalZipcodes">-</div>
+        </div>
+        <div class="stat-card low">
+            <h3>Low Risk</h3>
+            <div class="value" id="lowRiskCount">-</div>
+            <div style="color: #666; font-size: 12px;" id="lowRiskPct">-</div>
+        </div>
+        <div class="stat-card medium">
+            <h3>Medium Risk</h3>
+            <div class="value" id="mediumRiskCount">-</div>
+            <div style="color: #666; font-size: 12px;" id="mediumRiskPct">-</div>
+        </div>
+        <div class="stat-card high">
+            <h3>High Risk</h3>
+            <div class="value" id="highRiskCount">-</div>
+            <div style="color: #666; font-size: 12px;" id="highRiskPct">-</div>
+        </div>
+    </div>
+
+    <!-- Chart: Top 20 Highest Risk Zipcodes -->
+    <div class="chart-container">
+        <h2>Top 20 Highest Risk ZIP Codes</h2>
+        <canvas id="topRiskChart"></canvas>
+    </div>
+
+    <!-- Chart: Risk vs Doses Scatter Plot -->
+    <div class="chart-container">
+        <h2>Adverse Event Rate vs. Doses Distributed</h2>
+        <canvas id="scatterChart"></canvas>
+    </div>
+
+    <!-- Filter Buttons -->
+    <div class="filter-buttons">
+        <button class="btn-all active" onclick="filterTable('ALL')">All Zipcodes</button>
+        <button class="btn-low" onclick="filterTable('LOW')">Low Risk</button>
+        <button class="btn-medium" onclick="filterTable('MEDIUM')">Medium Risk</button>
+        <button class="btn-high" onclick="filterTable('HIGH')">High Risk</button>
+    </div>
+
+    <!-- Data Table -->
+    <div class="table-container">
+        <h2>Detailed Zipcode Data</h2>
+        <table id="zipcodeTable" class="display" style="width:100%">
+            <thead>
+                <tr>
+                    <th>ZIP Code</th>
+                    <th>Risk Level</th>
+                    <th>Adverse Events per 100K</th>
+                    <th>Total Doses</th>
+                    <th>Total Adverse Events</th>
+                    <th>Num Batches</th>
+                    <th>Num Providers</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+            </tbody>
+        </table>
+    </div>
+
+    <script src="./ZipcodeRiskMapView.js"></script>
+</body>
+</html>
