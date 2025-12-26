@@ -1,25 +1,12 @@
 import pandas as pd
-from GoogleAnalytics.GoogleAnalyticsReader import GoogleAnalyticsReader
+from GoogleAnalytics.CityCountsByClickedBatchcodeProvider import CityCountsByClickedBatchcodeProvider
 
 class RegionCountsByClickedBatchcodeProvider:
 
     @staticmethod
     def getRegionCountsByClickedBatchcode(file):
-        return RegionCountsByClickedBatchcodeProvider._getRegionCountsByClickedBatchcodeFromTable(RegionCountsByClickedBatchcodeProvider._getCityCountsByClickedBatchcode(file))
-
-    # FK-TODO: delegate same method CountryCountsByClickedBatchcodeProvider._getCityCountsByClickedBatchcode() to here
-    @staticmethod
-    def _getCityCountsByClickedBatchcode(file, includeDateRange = False):
-        return GoogleAnalyticsReader.read_csv(
-            file = file,
-            columns = {
-                'Country': 'COUNTRY',
-                'Region': 'REGION',
-                'City': 'CITY',
-                'Event count': 'CITY_COUNT_BY_VAX_LOT'
-            },
-            index_columns = ['COUNTRY', 'REGION', 'CITY'],
-            dateRangeIndexColumns = {'startDate' : 'START_DATE', 'endDate': 'END_DATE'} if includeDateRange else None)
+        cityCountsByClickedBatchcode = CityCountsByClickedBatchcodeProvider.getCityCountsByClickedBatchcode(file)
+        return RegionCountsByClickedBatchcodeProvider._getRegionCountsByClickedBatchcodeFromTable(cityCountsByClickedBatchcode)
 
     @staticmethod
     def _getRegionCountsByClickedBatchcodeFromTable(cityCountsByClickedBatchcodeTable):

@@ -3,7 +3,9 @@ class BatchCodeTableInitializer {
     #chartInstances = new Map();
 
     initialize({ batchCodeTableElement, showCountriesColumn, showDataTablesFilter }) {
-        // FK-TODO: show "Loading.." message or spinning wheel.
+        // Show loading indicator
+        this.#showLoadingIndicator(batchCodeTableElement);
+
         this.#loadBarChartDescriptions(showCountriesColumn)
             .then(barChartDescriptions => {
                 const batchCodeTable = this.#createEmptyBatchCodeTable(batchCodeTableElement, showCountriesColumn, barChartDescriptions);
@@ -18,8 +20,31 @@ class BatchCodeTableInitializer {
                     .then(json => {
                         this.#setTableRows(batchCodeTable, json.data);
                         this.#makeCompanyColumnSearchable(batchCodeTable);
+                        // Hide loading indicator after data is loaded
+                        this.#hideLoadingIndicator(batchCodeTableElement);
+                    })
+                    .catch(error => {
+                        console.error('Error loading batch code table:', error);
+                        this.#hideLoadingIndicator(batchCodeTableElement);
                     });
             });
+    }
+
+    #showLoadingIndicator(tableElement) {
+        const loadingDiv = document.createElement('div');
+        loadingDiv.id = 'batch-table-loading';
+        loadingDiv.style.cssText = 'text-align: center; padding: 20px; font-size: 16px; color: #666;';
+        loadingDiv.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Loading batch code data...';
+        tableElement.parentElement.insertBefore(loadingDiv, tableElement);
+        tableElement.style.display = 'none';
+    }
+
+    #hideLoadingIndicator(tableElement) {
+        const loadingDiv = document.getElementById('batch-table-loading');
+        if (loadingDiv) {
+            loadingDiv.remove();
+        }
+        tableElement.style.display = '';
     }
 
     #loadBarChartDescriptions(shallLoad) {

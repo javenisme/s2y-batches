@@ -18,18 +18,20 @@ class HistogramDescriptionTableFactory:
 
     @staticmethod
     def _createHistogramDescriptionTableForCountries(dictByBatchcodeTable):
-            return (dictByBatchcodeTable
+            result = (dictByBatchcodeTable
                         .groupby(['VAX_LOT_EXPLODED', 'COUNTRY'])
                         .agg(HistogramDescriptionTableFactory._getHistograms)
-                        .reset_index(level = 'COUNTRY')
-                        .drop('nan'))
+                        .reset_index(level = 'COUNTRY'))
+            # Drop 'nan' if it exists in the index
+            return result.drop('nan') if 'nan' in result.index else result
 
     @staticmethod
     def _createGlobalHistogramDescriptionTable(dictByBatchcodeTable):
-            return (dictByBatchcodeTable
+            result = (dictByBatchcodeTable
                         .groupby('VAX_LOT_EXPLODED')
-                        .agg(HistogramDescriptionTableFactory._getHistograms)
-                        .drop('nan'))
+                        .agg(HistogramDescriptionTableFactory._getHistograms))
+            # Drop 'nan' if it exists in the index
+            return result.drop('nan') if 'nan' in result.index else result
 
 
     @staticmethod
@@ -51,5 +53,6 @@ class HistogramDescriptionTableFactory:
 
     @staticmethod
     def _getNaNBatchcodes(batchcodes):
-        # FK-TODO: handle 'nan' everywhere correctly
-        return [batchcode for batchcode in batchcodes if batchcode != 'nan']
+        # Filter out both string 'nan' and actual NaN values
+        return [batchcode for batchcode in batchcodes
+                if batchcode != 'nan' and pd.notna(batchcode)]
