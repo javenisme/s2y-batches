@@ -1,11 +1,204 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="zh-CN">
 <head>
-  <meta http-equiv="refresh" content="0; url=batchCodeTable.html" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>S2Y Batches - 疫苗批次风险评估平台</title>
+    <meta name="description" content="S2Y Batches - 疫苗批次风险评估和数据分析 SAAS 平台">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            width: 100%;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 50px;
+        }
+
+        h1 {
+            font-size: 3em;
+            margin-bottom: 15px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .subtitle {
+            font-size: 1.3em;
+            opacity: 0.95;
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+
+        .card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.4);
+        }
+
+        .card-icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+            display: block;
+        }
+
+        .card h2 {
+            color: #667eea;
+            font-size: 1.8em;
+            margin-bottom: 15px;
+        }
+
+        .card p {
+            color: #666;
+            font-size: 1.05em;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .card-features {
+            list-style: none;
+            margin-bottom: 20px;
+        }
+
+        .card-features li {
+            color: #555;
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .card-features li:last-child {
+            border-bottom: none;
+        }
+
+        .card-features li::before {
+            content: "✓ ";
+            color: #10b981;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+
+        .btn {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 12px 30px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: background 0.3s ease;
+        }
+
+        .btn:hover {
+            background: #5568d3;
+        }
+
+        .footer {
+            text-align: center;
+            color: white;
+            opacity: 0.9;
+        }
+
+        .footer a {
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2em;
+            }
+
+            .cards {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
-
 <body>
-</body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 S2Y Batches</h1>
+            <p class="subtitle">疫苗批次风险评估和数据分析 SAAS 平台</p>
+        </div>
 
+        <div class="cards">
+            <a href="batchCodeTable.html" class="card">
+                <span class="card-icon">📊</span>
+                <h2>数据可视化</h2>
+                <p>查看疫苗批次数据、风险地图和统计分析</p>
+                <ul class="card-features">
+                    <li>批次代码查询</li>
+                    <li>邮编风险地图</li>
+                    <li>不良事件统计</li>
+                    <li>交互式图表</li>
+                </ul>
+                <span class="btn">进入应用 →</span>
+            </a>
+
+            <a href="api-docs.html" class="card">
+                <span class="card-icon">🔌</span>
+                <h2>API 文档</h2>
+                <p>为开发者提供完整的 API 接口文档</p>
+                <ul class="card-features">
+                    <li>RESTful API</li>
+                    <li>静态数据访问</li>
+                    <li>代码示例</li>
+                    <li>Postman Collection</li>
+                </ul>
+                <span class="btn">查看文档 →</span>
+            </a>
+        </div>
+
+        <div class="footer">
+            <p>
+                <strong>API 端点:</strong> 
+                <a href="https://s2y-batches-api.javenisme.workers.dev/health" target="_blank">
+                    https://s2y-batches-api.javenisme.workers.dev
+                </a>
+            </p>
+            <p style="margin-top: 10px;">
+                <a href="https://github.com/javenisme/s2y-batches" target="_blank">GitHub</a> | 
+                <a href="mailto:support@s2y-batches.com">技术支持</a>
+            </p>
+        </div>
+    </div>
+</body>
 </html>
