@@ -16,148 +16,210 @@
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
             line-height: 1.6;
             color: #333;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
+            background: #f5f7fa;
+            height: 100vh;
+            overflow: hidden;
         }
 
         .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
+            display: flex;
+            height: 100vh;
         }
 
-        header {
-            background: rgba(255, 255, 255, 0.95);
+        /* 左侧边栏 */
+        .sidebar {
+            width: 320px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            overflow-y: auto;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-header {
+            padding: 30px 20px;
+            background: rgba(0, 0, 0, 0.1);
             backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 40px;
-            margin-bottom: 30px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        h1 {
-            font-size: 2.5em;
-            color: #667eea;
-            margin-bottom: 10px;
+        .sidebar-header h1 {
+            font-size: 1.5em;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
-        .subtitle {
-            font-size: 1.2em;
-            color: #666;
-            margin-bottom: 20px;
+        .sidebar-header .subtitle {
+            font-size: 0.85em;
+            opacity: 0.9;
+            margin-bottom: 15px;
         }
 
         .status {
             display: inline-block;
             background: #10b981;
             color: white;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 0.9em;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.75em;
             font-weight: 600;
         }
 
-        .api-urls {
-            background: #f8f9fa;
-            border-left: 4px solid #667eea;
+        .api-info {
             padding: 20px;
-            margin: 20px 0;
-            border-radius: 8px;
+            background: rgba(0, 0, 0, 0.1);
+            margin: 0 20px 20px 20px;
+            border-radius: 10px;
+            font-size: 0.85em;
         }
 
-        .api-url {
-            margin: 10px 0;
-            font-family: 'Monaco', 'Courier New', monospace;
+        .api-info strong {
+            display: block;
+            margin-bottom: 5px;
+            opacity: 0.8;
+        }
+
+        .api-info code {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 4px 8px;
+            border-radius: 4px;
+            display: block;
+            margin-top: 5px;
+            word-break: break-all;
             font-size: 0.9em;
         }
 
-        .api-url strong {
-            color: #667eea;
-            display: inline-block;
-            width: 120px;
+        .nav-section {
+            padding: 0 20px 20px 20px;
+            flex: 1;
         }
 
-        .api-url code {
-            background: #e9ecef;
-            padding: 4px 8px;
-            border-radius: 4px;
-            color: #495057;
+        .nav-section h3 {
+            font-size: 0.9em;
+            opacity: 0.7;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
-        .docs-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-
-        .doc-card {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 15px;
-            padding: 30px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        .nav-item {
+            background: rgba(255, 255, 255, 0.1);
+            margin-bottom: 8px;
+            border-radius: 8px;
             cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
         }
 
-        .doc-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateX(5px);
         }
 
-        .doc-card h3 {
+        .nav-item.active {
+            background: rgba(255, 255, 255, 0.25);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .nav-item-content {
+            padding: 12px 15px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .nav-icon {
+            font-size: 1.3em;
+            min-width: 24px;
+        }
+
+        .nav-text {
+            flex: 1;
+        }
+
+        .nav-title {
+            font-weight: 600;
+            font-size: 0.95em;
+            margin-bottom: 2px;
+        }
+
+        .nav-desc {
+            font-size: 0.75em;
+            opacity: 0.8;
+        }
+
+        /* 右侧内容区 */
+        .content {
+            flex: 1;
+            overflow-y: auto;
+            background: #ffffff;
+        }
+
+        .content-inner {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px;
+        }
+
+        .content-header {
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        .content-header h2 {
             color: #667eea;
-            font-size: 1.4em;
+            font-size: 2.5em;
             margin-bottom: 10px;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 15px;
         }
 
-        .doc-icon {
-            font-size: 1.5em;
+        .content-header .icon {
+            font-size: 1.2em;
         }
 
-        .doc-card p {
+        .content-header p {
             color: #666;
-            margin-bottom: 15px;
-            font-size: 0.95em;
+            font-size: 1.1em;
         }
 
-        .doc-card .size {
+        .content-header .meta {
+            display: flex;
+            gap: 20px;
+            margin-top: 15px;
+            font-size: 0.9em;
             color: #999;
-            font-size: 0.85em;
-            margin-bottom: 15px;
         }
 
-        .doc-link {
-            display: inline-block;
-            background: #667eea;
-            color: white;
-            padding: 10px 20px;
-            border-radius: 8px;
-            text-decoration: none;
-            font-weight: 600;
-            transition: background 0.3s ease;
+        .content-body {
+            color: #444;
         }
 
-        .doc-link:hover {
-            background: #5568d3;
-        }
-
-        .quick-start {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 15px;
-            padding: 30px;
-            margin-bottom: 30px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-        }
-
-        .quick-start h2 {
+        .content-body h3 {
             color: #667eea;
-            margin-bottom: 20px;
+            font-size: 1.5em;
+            margin: 30px 0 15px 0;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .content-body p {
+            margin-bottom: 15px;
+            line-height: 1.8;
+        }
+
+        .content-body ul, .content-body ol {
+            margin: 15px 0 15px 30px;
+        }
+
+        .content-body li {
+            margin-bottom: 8px;
+            line-height: 1.8;
         }
 
         .code-block {
@@ -166,7 +228,7 @@
             padding: 20px;
             border-radius: 8px;
             overflow-x: auto;
-            margin: 15px 0;
+            margin: 20px 0;
             font-family: 'Monaco', 'Courier New', monospace;
             font-size: 0.9em;
         }
@@ -183,141 +245,487 @@
             color: #9ca3af;
         }
 
-        footer {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 15px;
-            padding: 30px;
-            text-align: center;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
         }
 
-        footer p {
-            color: #666;
-            margin: 5px 0;
+        .feature-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 3px solid #667eea;
         }
 
-        footer a {
+        .feature-item strong {
             color: #667eea;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .btn {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
             text-decoration: none;
             font-weight: 600;
+            transition: background 0.3s ease;
+            margin-top: 10px;
         }
 
-        footer a:hover {
-            text-decoration: underline;
+        .btn:hover {
+            background: #5568d3;
         }
 
+        .btn-secondary {
+            background: #10b981;
+        }
+
+        .btn-secondary:hover {
+            background: #059669;
+        }
+
+        /* 响应式设计 */
         @media (max-width: 768px) {
-            h1 {
-                font-size: 2em;
+            .sidebar {
+                position: fixed;
+                left: -320px;
+                z-index: 1000;
+                transition: left 0.3s ease;
             }
 
-            .docs-grid {
-                grid-template-columns: 1fr;
+            .sidebar.open {
+                left: 0;
             }
+
+            .content {
+                width: 100%;
+            }
+
+            .content-inner {
+                padding: 20px;
+            }
+
+            .content-header h2 {
+                font-size: 1.8em;
+            }
+        }
+
+        /* 滚动条样式 */
+        .sidebar::-webkit-scrollbar,
+        .content::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .sidebar::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 4px;
+        }
+
+        .content::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        .content::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+
+        .content::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        /* Loading 状态 */
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            font-size: 1.2em;
+            color: #999;
+        }
+
+        iframe {
+            width: 100%;
+            border: none;
+            min-height: 800px;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <header>
-            <h1>🚀 S2Y Batches API</h1>
-            <p class="subtitle">疫苗批次风险评估和数据分析 SAAS 平台</p>
-            <span class="status">✅ API 已上线</span>
+        <!-- 左侧边栏 -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h1>🚀 S2Y Batches API</h1>
+                <p class="subtitle">疫苗批次风险评估平台</p>
+                <span class="status">✅ API 已上线</span>
+            </div>
 
-            <div class="api-urls">
-                <div class="api-url">
+            <div class="api-info">
+                <div style="margin-bottom: 15px;">
                     <strong>静态数据:</strong>
-                    <code>https://s2y-batches.javenisme.workers.dev</code>
+                    <code>s2y-batches.javenisme.workers.dev</code>
                 </div>
-                <div class="api-url">
+                <div>
                     <strong>RESTful API:</strong>
-                    <code>https://s2y-batches-api.javenisme.workers.dev</code>
+                    <code>s2y-batches-api.javenisme.workers.dev</code>
                 </div>
             </div>
-        </header>
 
-        <div class="quick-start">
-            <h2>⚡ 快速开始</h2>
-            <p>立即测试 API:</p>
-            <div class="code-block">
-                <code><span class="comment"># 健康检查</span>
+            <div class="nav-section">
+                <h3>📚 文档导航</h3>
+                
+                <div class="nav-item active" data-file="overview">
+                    <div class="nav-item-content">
+                        <span class="nav-icon">🏠</span>
+                        <div class="nav-text">
+                            <div class="nav-title">概览</div>
+                            <div class="nav-desc">快速开始和简介</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="nav-item" data-file="API_README.md">
+                    <div class="nav-item-content">
+                        <span class="nav-icon">📖</span>
+                        <div class="nav-text">
+                            <div class="nav-title">API 文档总览</div>
+                            <div class="nav-desc">文档导航中心</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="nav-item" data-file="DATA_API_GUIDE.md">
+                    <div class="nav-item-content">
+                        <span class="nav-icon">✨</span>
+                        <div class="nav-text">
+                            <div class="nav-title">数据 API 访问</div>
+                            <div class="nav-desc">直接访问 JSON 数据</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="nav-item" data-file="API_DOCUMENTATION.md">
+                    <div class="nav-item-content">
+                        <span class="nav-icon">📋</span>
+                        <div class="nav-text">
+                            <div class="nav-title">完整 API 文档</div>
+                            <div class="nav-desc">详细规范和参数</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="nav-item" data-file="API_QUICK_REFERENCE_CN.md">
+                    <div class="nav-item-content">
+                        <span class="nav-icon">⚡</span>
+                        <div class="nav-text">
+                            <div class="nav-title">快速参考</div>
+                            <div class="nav-desc">中文速查手册</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="nav-item" data-file="INTEGRATION_GUIDE.md">
+                    <div class="nav-item-content">
+                        <span class="nav-icon">🔧</span>
+                        <div class="nav-text">
+                            <div class="nav-title">集成指南</div>
+                            <div class="nav-desc">集成教程和示例</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="nav-item" data-file="openapi.yaml">
+                    <div class="nav-item-content">
+                        <span class="nav-icon">🤖</span>
+                        <div class="nav-text">
+                            <div class="nav-title">OpenAPI 规范</div>
+                            <div class="nav-desc">OpenAPI 3.0 格式</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="nav-item" data-file="postman">
+                    <div class="nav-item-content">
+                        <span class="nav-icon">🧪</span>
+                        <div class="nav-text">
+                            <div class="nav-title">Postman Collection</div>
+                            <div class="nav-desc">API 测试工具</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 右侧内容区 -->
+        <div class="content">
+            <div class="content-inner" id="content">
+                <!-- 默认显示概览 -->
+                <div class="content-header">
+                    <h2><span class="icon">🏠</span> API 文档概览</h2>
+                    <p>欢迎使用 S2Y Batches API - 疫苗批次风险评估和数据分析平台</p>
+                </div>
+
+                <div class="content-body">
+                    <h3>⚡ 快速开始</h3>
+                    <p>立即测试 API，无需认证即可访问健康检查端点：</p>
+                    <div class="code-block">
+                        <code><span class="comment"># 健康检查</span>
 curl https://s2y-batches-api.javenisme.workers.dev/health
 
-<span class="comment"># 获取批次信息</span>
+<span class="comment"># 获取批次信息（需要 API Key）</span>
 curl -H <span class="highlight">"Authorization: Bearer test_key"</span> \
   https://s2y-batches-api.javenisme.workers.dev/api/v1/batch/EN6201</code>
+                    </div>
+
+                    <h3>📚 主要功能</h3>
+                    <div class="feature-grid">
+                        <div class="feature-item">
+                            <strong>批次查询</strong>
+                            <p>查询疫苗批次详细信息和风险评分</p>
+                        </div>
+                        <div class="feature-item">
+                            <strong>风险评估</strong>
+                            <p>个性化风险评估和统计分析</p>
+                        </div>
+                        <div class="feature-item">
+                            <strong>数据搜索</strong>
+                            <p>按制造商、风险等级等条件搜索</p>
+                        </div>
+                        <div class="feature-item">
+                            <strong>症状分析</strong>
+                            <p>获取批次相关的热门症状数据</p>
+                        </div>
+                    </div>
+
+                    <h3>🔗 快速链接</h3>
+                    <p>
+                        <a href="API_README.md" class="btn">查看完整文档</a>
+                        <a href="DATA_API_GUIDE.md" class="btn btn-secondary">数据 API 指南</a>
+                    </p>
+
+                    <h3>📊 可用端点</h3>
+                    <ul>
+                        <li><code>GET /health</code> - 健康检查</li>
+                        <li><code>GET /api/v1/batch/{batch_code}</code> - 获取批次详情</li>
+                        <li><code>GET /api/v1/batch/search</code> - 搜索批次</li>
+                        <li><code>GET /api/v1/batch/{batch_code}/top-symptoms</code> - 获取热门症状</li>
+                        <li><code>POST /api/v1/risk/assess</code> - 个性化风险评估</li>
+                        <li><code>GET /api/v1/risk/batch/{batch_code}</code> - 批次风险统计</li>
+                    </ul>
+
+                    <h3>💡 技术支持</h3>
+                    <p>
+                        如有问题，请联系: <a href="mailto:support@s2y-batches.com">support@s2y-batches.com</a><br>
+                        GitHub: <a href="https://github.com/javenisme/s2y-batches" target="_blank">javenisme/s2y-batches</a>
+                    </p>
+                </div>
             </div>
         </div>
-
-        <h2 style="color: white; margin-bottom: 20px; text-align: center; font-size: 2em;">📚 API 文档</h2>
-
-        <div class="docs-grid">
-            <div class="doc-card" onclick="window.open('API_README.md', '_blank')">
-                <h3><span class="doc-icon">📖</span> API 文档总览</h3>
-                <p>文档导航中心,快速找到所需文档</p>
-                <p class="size">9.6 KB</p>
-                <a href="API_README.md" class="doc-link" onclick="event.stopPropagation()">查看文档</a>
-            </div>
-
-            <div class="doc-card" onclick="window.open('DATA_API_GUIDE.md', '_blank')">
-                <h3><span class="doc-icon">✨</span> 数据 API 访问</h3>
-                <p>直接访问 JSON 数据,无需认证</p>
-                <p class="size">推荐新手</p>
-                <a href="DATA_API_GUIDE.md" class="doc-link" onclick="event.stopPropagation()">查看文档</a>
-            </div>
-
-            <div class="doc-card" onclick="window.open('API_DOCUMENTATION.md', '_blank')">
-                <h3><span class="doc-icon">📋</span> 完整 API 文档</h3>
-                <p>详细的 API 规范,包含所有端点和参数</p>
-                <p class="size">21 KB</p>
-                <a href="API_DOCUMENTATION.md" class="doc-link" onclick="event.stopPropagation()">查看文档</a>
-            </div>
-
-            <div class="doc-card" onclick="window.open('API_QUICK_REFERENCE_CN.md', '_blank')">
-                <h3><span class="doc-icon">⚡</span> 快速参考</h3>
-                <p>中文速查手册,快速查找 API 信息</p>
-                <p class="size">7.1 KB</p>
-                <a href="API_QUICK_REFERENCE_CN.md" class="doc-link" onclick="event.stopPropagation()">查看文档</a>
-            </div>
-
-            <div class="doc-card" onclick="window.open('INTEGRATION_GUIDE.md', '_blank')">
-                <h3><span class="doc-icon">🔧</span> 集成指南</h3>
-                <p>集成教程和示例代码</p>
-                <p class="size">13+ KB</p>
-                <a href="INTEGRATION_GUIDE.md" class="doc-link" onclick="event.stopPropagation()">查看文档</a>
-            </div>
-
-            <div class="doc-card" onclick="window.open('openapi.yaml', '_blank')">
-                <h3><span class="doc-icon">🤖</span> OpenAPI 规范</h3>
-                <p>OpenAPI 3.0 格式,可生成 SDK</p>
-                <p class="size">18 KB</p>
-                <a href="openapi.yaml" class="doc-link" onclick="event.stopPropagation()">查看文档</a>
-            </div>
-
-            <div class="doc-card" onclick="window.open('S2Y_Batches_API.postman_collection.json', '_blank')">
-                <h3><span class="doc-icon">🧪</span> Postman Collection</h3>
-                <p>导入 Postman 直接测试 API</p>
-                <p class="size">13 KB</p>
-                <a href="S2Y_Batches_API.postman_collection.json" class="doc-link" onclick="event.stopPropagation()">下载</a>
-            </div>
-
-            <div class="doc-card" onclick="window.open('API_DEPLOYMENT_GUIDE.md', '_blank')">
-                <h3><span class="doc-icon">🚀</span> 部署指南</h3>
-                <p>如何部署 API 到 Cloudflare Workers</p>
-                <p class="size">开发者</p>
-                <a href="API_DEPLOYMENT_GUIDE.md" class="doc-link" onclick="event.stopPropagation()">查看文档</a>
-            </div>
-        </div>
-
-        <footer>
-            <p><strong>S2Y Batches API</strong> - 版本 1.0.0</p>
-            <p>技术支持: <a href="mailto:support@s2y-batches.com">support@s2y-batches.com</a></p>
-            <p>GitHub: <a href="https://github.com/javenisme/s2y-batches" target="_blank">javenisme/s2y-batches</a></p>
-            <p style="margin-top: 15px; color: #999; font-size: 0.9em;">
-                © 2026 S2Y Batches. All rights reserved.
-            </p>
-        </footer>
     </div>
+
+    <script>
+        // 导航项点击事件
+        const navItems = document.querySelectorAll('.nav-item');
+        const contentDiv = document.getElementById('content');
+
+        // 文档内容模板
+        const contentTemplates = {
+            'overview': `
+                <div class="content-header">
+                    <h2><span class="icon">🏠</span> API 文档概览</h2>
+                    <p>欢迎使用 S2Y Batches API - 疫苗批次风险评估和数据分析平台</p>
+                </div>
+                <div class="content-body">
+                    <h3>⚡ 快速开始</h3>
+                    <p>立即测试 API，无需认证即可访问健康检查端点：</p>
+                    <div class="code-block">
+                        <code><span class="comment"># 健康检查</span>
+curl https://s2y-batches-api.javenisme.workers.dev/health
+
+<span class="comment"># 获取批次信息（需要 API Key）</span>
+curl -H <span class="highlight">"Authorization: Bearer test_key"</span> \\
+  https://s2y-batches-api.javenisme.workers.dev/api/v1/batch/EN6201</code>
+                    </div>
+                    <h3>📚 主要功能</h3>
+                    <div class="feature-grid">
+                        <div class="feature-item">
+                            <strong>批次查询</strong>
+                            <p>查询疫苗批次详细信息和风险评分</p>
+                        </div>
+                        <div class="feature-item">
+                            <strong>风险评估</strong>
+                            <p>个性化风险评估和统计分析</p>
+                        </div>
+                        <div class="feature-item">
+                            <strong>数据搜索</strong>
+                            <p>按制造商、风险等级等条件搜索</p>
+                        </div>
+                        <div class="feature-item">
+                            <strong>症状分析</strong>
+                            <p>获取批次相关的热门症状数据</p>
+                        </div>
+                    </div>
+                    <h3>🔗 快速链接</h3>
+                    <p>
+                        <a href="#" class="btn" onclick="loadDoc('API_README.md'); return false;">查看完整文档</a>
+                        <a href="#" class="btn btn-secondary" onclick="loadDoc('DATA_API_GUIDE.md'); return false;">数据 API 指南</a>
+                    </p>
+                    <h3>📊 可用端点</h3>
+                    <ul>
+                        <li><code>GET /health</code> - 健康检查</li>
+                        <li><code>GET /api/v1/batch/{batch_code}</code> - 获取批次详情</li>
+                        <li><code>GET /api/v1/batch/search</code> - 搜索批次</li>
+                        <li><code>GET /api/v1/batch/{batch_code}/top-symptoms</code> - 获取热门症状</li>
+                        <li><code>POST /api/v1/risk/assess</code> - 个性化风险评估</li>
+                        <li><code>GET /api/v1/risk/batch/{batch_code}</code> - 批次风险统计</li>
+                    </ul>
+                    <h3>💡 技术支持</h3>
+                    <p>
+                        如有问题，请联系: <a href="mailto:support@s2y-batches.com">support@s2y-batches.com</a><br>
+                        GitHub: <a href="https://github.com/javenisme/s2y-batches" target="_blank">javenisme/s2y-batches</a>
+                    </p>
+                </div>
+            `,
+            'postman': `
+                <div class="content-header">
+                    <h2><span class="icon">🧪</span> Postman Collection</h2>
+                    <p>使用 Postman 快速测试 API 端点</p>
+                    <div class="meta">
+                        <span>📦 文件大小: 13 KB</span>
+                        <span>📅 最后更新: 2026-01-01</span>
+                    </div>
+                </div>
+                <div class="content-body">
+                    <h3>📥 下载和导入</h3>
+                    <p>
+                        <a href="S2Y_Batches_API.postman_collection.json" download class="btn">下载 Postman Collection</a>
+                    </p>
+                    <h3>🔧 使用步骤</h3>
+                    <ol>
+                        <li>下载 <code>S2Y_Batches_API.postman_collection.json</code> 文件</li>
+                        <li>打开 Postman 应用</li>
+                        <li>点击 "Import" 按钮</li>
+                        <li>选择下载的 JSON 文件</li>
+                        <li>Collection 将自动导入到 Postman</li>
+                    </ol>
+                    <h3>📋 包含的请求</h3>
+                    <ul>
+                        <li>健康检查 (Health Check)</li>
+                        <li>获取批次详情 (Get Batch Details)</li>
+                        <li>搜索批次 (Search Batches)</li>
+                        <li>获取热门症状 (Get Top Symptoms)</li>
+                        <li>风险评估 (Risk Assessment)</li>
+                        <li>批次风险统计 (Batch Risk Statistics)</li>
+                    </ul>
+                    <h3>🔑 环境变量</h3>
+                    <p>Collection 包含以下预配置的环境变量：</p>
+                    <ul>
+                        <li><code>base_url</code>: API 基础 URL</li>
+                        <li><code>api_key</code>: API 认证密钥</li>
+                    </ul>
+                </div>
+            `
+        };
+
+        function loadDoc(file) {
+            // 更新导航激活状态
+            navItems.forEach(item => item.classList.remove('active'));
+            const activeItem = document.querySelector(`[data-file="${file}"]`);
+            if (activeItem) {
+                activeItem.classList.add('active');
+            }
+
+            // 如果是预定义模板
+            if (contentTemplates[file]) {
+                contentDiv.innerHTML = contentTemplates[file];
+                return;
+            }
+
+            // 加载 Markdown 文件
+            contentDiv.innerHTML = '<div class="loading">加载中...</div>';
+            
+            fetch(file)
+                .then(response => {
+                    if (!response.ok) throw new Error('文件加载失败');
+                    return response.text();
+                })
+                .then(text => {
+                    // 简单的 Markdown 渲染（实际项目中建议使用 marked.js）
+                    const icon = getFileIcon(file);
+                    const title = getFileTitle(file);
+                    
+                    contentDiv.innerHTML = `
+                        <div class="content-header">
+                            <h2><span class="icon">${icon}</span> ${title}</h2>
+                            <p>查看原始文件: <a href="${file}" target="_blank">${file}</a></p>
+                        </div>
+                        <div class="content-body">
+                            <iframe src="${file}" style="width: 100%; min-height: 800px; border: 1px solid #e5e7eb; border-radius: 8px;"></iframe>
+                        </div>
+                    `;
+                })
+                .catch(error => {
+                    contentDiv.innerHTML = `
+                        <div class="content-header">
+                            <h2>❌ 加载失败</h2>
+                        </div>
+                        <div class="content-body">
+                            <p>无法加载文件: ${file}</p>
+                            <p>错误: ${error.message}</p>
+                            <p><a href="${file}" target="_blank" class="btn">在新窗口打开</a></p>
+                        </div>
+                    `;
+                });
+        }
+
+        function getFileIcon(file) {
+            if (file.includes('README')) return '📖';
+            if (file.includes('DATA')) return '✨';
+            if (file.includes('DOCUMENTATION')) return '📋';
+            if (file.includes('QUICK')) return '⚡';
+            if (file.includes('INTEGRATION')) return '🔧';
+            if (file.includes('openapi')) return '🤖';
+            if (file.includes('DEPLOYMENT')) return '🚀';
+            return '📄';
+        }
+
+        function getFileTitle(file) {
+            const titles = {
+                'API_README.md': 'API 文档总览',
+                'DATA_API_GUIDE.md': '数据 API 访问指南',
+                'API_DOCUMENTATION.md': '完整 API 文档',
+                'API_QUICK_REFERENCE_CN.md': 'API 快速参考',
+                'INTEGRATION_GUIDE.md': '集成指南',
+                'openapi.yaml': 'OpenAPI 规范',
+                'API_DEPLOYMENT_GUIDE.md': '部署指南'
+            };
+            return titles[file] || file;
+        }
+
+        // 绑定导航点击事件
+        navItems.forEach(item => {
+            item.addEventListener('click', () => {
+                const file = item.getAttribute('data-file');
+                loadDoc(file);
+            });
+        });
+
+        // 支持浏览器后退/前进
+        window.addEventListener('popstate', (event) => {
+            if (event.state && event.state.file) {
+                loadDoc(event.state.file);
+            }
+        });
+    </script>
 </body>
 </html>

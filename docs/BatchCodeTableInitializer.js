@@ -35,8 +35,13 @@ class BatchCodeTableInitializer {
         loadingDiv.id = 'batch-table-loading';
         loadingDiv.style.cssText = 'text-align: center; padding: 20px; font-size: 16px; color: #666;';
         loadingDiv.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Loading batch code data...';
-        tableElement.parentElement.insertBefore(loadingDiv, tableElement);
-        tableElement.style.display = 'none';
+        
+        // Get the actual DOM element whether it's jQuery or DOM
+        const el = tableElement[0] || tableElement;
+        if (el && el.parentElement) {
+            el.parentElement.insertBefore(loadingDiv, el);
+            el.style.display = 'none';
+        }
     }
 
     #hideLoadingIndicator(tableElement) {
@@ -44,7 +49,11 @@ class BatchCodeTableInitializer {
         if (loadingDiv) {
             loadingDiv.remove();
         }
-        tableElement.style.display = '';
+        // Get the actual DOM element whether it's jQuery or DOM
+        const el = tableElement[0] || tableElement;
+        if (el) {
+            el.style.display = '';
+        }
     }
 
     #loadBarChartDescriptions(shallLoad) {
