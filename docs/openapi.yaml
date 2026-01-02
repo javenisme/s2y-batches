@@ -1,0 +1,697 @@
+openapi: 3.0.3
+info:
+  title: S2Y Batches API
+  description: |
+    疫苗批次风险评估和数据分析 SAAS 服务 API
+
+    ## 功能特性
+    - 疫苗批次信息查询
+    - 批次风险评估
+    - 个性化风险分析
+    - 不良反应症状统计
+
+    ## 认证
+    所有 API 请求需要在请求头中包含 API Key:
+    ```
+    Authorization: Bearer YOUR_API_KEY
+    ```
+
+  version: 1.0.0
+  contact:
+    name: S2Y Batches Support
+    email: support@s2y-batches.com
+    url: https://s2y-batches.com
+  license:
+    name: Proprietary
+    url: https://s2y-batches.com/terms
+
+servers:
+  - url: https://s2y-batches.javenisme.workers.dev
+    description: 生产环境
+  - url: http://localhost:8000
+    description: 开发环境
+
+tags:
+  - name: health
+    description: 健康检查
+  - name: batch
+    description: 批次信息查询
+  - name: risk
+    description: 风险评估
+
+security:
+  - BearerAuth: []
+
+paths:
+  /health:
+    get:
+      tags:
+        - health
+      summary: 健康检查
+      description: 检查 API 服务状态
+      operationId: healthCheck
+      security: []
+      responses:
+        "200":
+          description: 服务正常
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  version:
+                    type: string
+                    example: 1.0.0
+                  project:
+                    type: string
+                    example: LCRAS API
+
+  /api/v1/batch/{batch_code}:
+    get:
+      tags:
+        - batch
+      summary: 获取批次详情
+      description: 获取指定疫苗批次的详细信息
+      operationId: getBatch
+      parameters:
+        - name: batch_code
+          in: path
+          required: true
+          description: 疫苗批次代码
+          schema:
+            type: string
+            example: EN6201
+      responses:
+        "200":
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BatchResponse"
+        "404":
+          description: 批次不存在
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+
+  /api/v1/batch/search:
+    get:
+      tags:
+        - batch
+      summary: 搜索批次
+      description: 根据条件搜索疫苗批次
+      operationId: searchBatches
+      parameters:
+        - name: manufacturer
+          in: query
+          description: 制造商名称
+          schema:
+            type: string
+            example: Pfizer
+        - name: risk_score_min
+          in: query
+          description: 最低风险分数
+          schema:
+            type: number
+            format: float
+            minimum: 0
+            maximum: 10
+            example: 5.0
+        - name: risk_score_max
+          in: query
+          description: 最高风险分数
+          schema:
+            type: number
+            format: float
+            minimum: 0
+            maximum: 10
+            example: 10.0
+        - name: min_reports
+          in: query
+          description: 最少报告数量
+          schema:
+            type: integer
+            minimum: 0
+            default: 10
+        - name: limit
+          in: query
+          description: 返回结果数量
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 500
+            default: 50
+        - name: offset
+          in: query
+          description: 分页偏移量
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+      responses:
+        "200":
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BatchSearchResponse"
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+
+  /api/v1/batch/{batch_code}/top-symptoms:
+    get:
+      tags:
+        - batch
+      summary: 获取批次热门症状
+      description: 获取指定批次最常见的不良反应症状
+      operationId: getBatchTopSymptoms
+      parameters:
+        - name: batch_code
+          in: path
+          required: true
+          description: 疫苗批次代码
+          schema:
+            type: string
+            example: EN6201
+        - name: limit
+          in: query
+          description: 返回症状数量
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        "200":
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TopSymptomsResponse"
+        "404":
+          description: 批次不存在
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+
+  /api/v1/risk/assess:
+    post:
+      tags:
+        - risk
+      summary: 个性化风险评估
+      description: 根据用户个人资料评估疫苗批次的个性化风险
+      operationId: assessRisk
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RiskAssessmentRequest"
+      responses:
+        "200":
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RiskAssessmentResponse"
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "404":
+          description: 批次不存在
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+
+  /api/v1/risk/batch/{batch_code}:
+    get:
+      tags:
+        - risk
+      summary: 获取批次风险统计
+      description: 获取批次的聚合风险统计数据(无个性化)
+      operationId: getBatchRiskStats
+      parameters:
+        - name: batch_code
+          in: path
+          required: true
+          description: 疫苗批次代码
+          schema:
+            type: string
+            example: EN6201
+      responses:
+        "200":
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BatchRiskStats"
+        "404":
+          description: 批次不存在
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: API Key 认证
+
+  schemas:
+    BatchResponse:
+      type: object
+      properties:
+        batch_code:
+          type: string
+          description: 批次代码
+          example: EN6201
+        manufacturer:
+          type: string
+          description: 制造商
+          example: Pfizer
+        vaccine_type:
+          type: string
+          description: 疫苗类型
+          example: COVID-19
+        total_reports:
+          type: integer
+          description: 总报告数
+          example: 1523
+        deaths:
+          type: integer
+          description: 死亡数
+          example: 45
+        disabilities:
+          type: integer
+          description: 致残数
+          example: 23
+        life_threatening:
+          type: integer
+          description: 危及生命数
+          example: 67
+        hospitalizations:
+          type: integer
+          description: 住院数
+          example: 234
+        severe_reports_pct:
+          type: number
+          format: float
+          description: 严重报告百分比
+          example: 24.36
+          nullable: true
+        lethality_pct:
+          type: number
+          format: float
+          description: 致死率百分比
+          example: 2.95
+          nullable: true
+        risk_score:
+          type: number
+          format: float
+          description: 风险分数 (0-10)
+          example: 7.2
+          nullable: true
+        risk_level:
+          type: string
+          description: 风险等级
+          enum: [Low, Medium, High]
+          example: High
+          nullable: true
+        first_report_date:
+          type: string
+          format: date
+          description: 首次报告日期
+          example: "2021-01-15"
+          nullable: true
+        last_report_date:
+          type: string
+          format: date
+          description: 最后报告日期
+          example: "2023-06-30"
+          nullable: true
+        country_distribution:
+          type: object
+          description: 国家分布
+          additionalProperties:
+            type: integer
+          example:
+            US: 1200
+            UK: 200
+            CA: 123
+          nullable: true
+        state_distribution:
+          type: object
+          description: 州/省分布
+          additionalProperties:
+            type: integer
+          example:
+            CA: 450
+            NY: 320
+            TX: 280
+          nullable: true
+
+    BatchSearchResponse:
+      type: object
+      properties:
+        batches:
+          type: array
+          items:
+            $ref: "#/components/schemas/BatchResponse"
+        total_count:
+          type: integer
+          description: 总数量
+          example: 156
+        limit:
+          type: integer
+          description: 返回数量限制
+          example: 20
+        offset:
+          type: integer
+          description: 分页偏移量
+          example: 0
+
+    TopSymptomsResponse:
+      type: object
+      properties:
+        batch_code:
+          type: string
+          description: 批次代码
+          example: EN6201
+        total_symptoms:
+          type: integer
+          description: 症状总数
+          example: 10
+        symptoms:
+          type: array
+          items:
+            type: object
+            properties:
+              symptom_name:
+                type: string
+                description: 症状名称
+                example: Headache
+              frequency:
+                type: integer
+                description: 出现频次
+                example: 456
+              percentage:
+                type: number
+                format: float
+                description: 百分比
+                example: 29.95
+
+    UserProfile:
+      type: object
+      required:
+        - age
+        - sex
+      properties:
+        age:
+          type: integer
+          minimum: 0
+          maximum: 120
+          description: 年龄
+          example: 45
+        sex:
+          type: string
+          enum: [M, F, U]
+          description: 性别 (M=男, F=女, U=未知)
+          example: M
+        pre_existing_conditions:
+          type: array
+          items:
+            type: string
+          description: 既往疾病列表
+          example: ["hypertension", "diabetes"]
+          nullable: true
+        previous_covid_infection:
+          type: boolean
+          description: 是否曾感染 COVID-19
+          example: false
+          default: false
+        dose_number:
+          type: integer
+          minimum: 1
+          maximum: 5
+          description: 疫苗剂次
+          example: 2
+          nullable: true
+
+    RiskAssessmentRequest:
+      type: object
+      required:
+        - batch_code
+        - user_profile
+      properties:
+        batch_code:
+          type: string
+          minLength: 1
+          maxLength: 50
+          description: 疫苗批次代码
+          example: EN6201
+        user_profile:
+          $ref: "#/components/schemas/UserProfile"
+
+    RiskFactor:
+      type: object
+      properties:
+        factor:
+          type: string
+          description: 风险因素名称
+          example: Age 45 (40-50)
+        impact:
+          type: string
+          description: 影响值
+          example: "+1.0"
+        description:
+          type: string
+          description: 详细描述
+          example: Middle-aged individuals show moderately elevated risk
+
+    ComparativeStats:
+      type: object
+      properties:
+        batch_avg_severity:
+          type: number
+          format: float
+          description: 批次平均严重度
+          example: 6.5
+        global_avg_severity:
+          type: number
+          format: float
+          description: 全局平均严重度
+          example: 4.2
+        percentile:
+          type: integer
+          minimum: 0
+          maximum: 100
+          description: 百分位排名
+          example: 75
+
+    RiskAssessmentResponse:
+      type: object
+      properties:
+        batch_code:
+          type: string
+          description: 批次代码
+          example: EN6201
+        manufacturer:
+          type: string
+          description: 制造商
+          example: Pfizer
+        risk_score:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 10
+          description: 个性化风险分数
+          example: 7.2
+        risk_level:
+          type: string
+          enum: [Low, Medium, High]
+          description: 风险等级
+          example: Medium
+        confidence:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1
+          description: 模型置信度
+          example: 0.85
+        risk_factors:
+          type: array
+          items:
+            $ref: "#/components/schemas/RiskFactor"
+        comparative_stats:
+          $ref: "#/components/schemas/ComparativeStats"
+        timestamp:
+          type: string
+          format: date-time
+          description: 评估时间戳
+          example: "2026-01-01T18:15:15Z"
+
+    BatchRiskStats:
+      type: object
+      properties:
+        batch_code:
+          type: string
+          example: EN6201
+        manufacturer:
+          type: string
+          example: Pfizer
+        total_reports:
+          type: integer
+          example: 1523
+        deaths:
+          type: integer
+          example: 45
+        disabilities:
+          type: integer
+          example: 23
+        life_threatening:
+          type: integer
+          example: 67
+        hospitalizations:
+          type: integer
+          example: 234
+        severe_reports_pct:
+          type: number
+          format: float
+          example: 24.36
+          nullable: true
+        lethality_pct:
+          type: number
+          format: float
+          example: 2.95
+          nullable: true
+        risk_score:
+          type: number
+          format: float
+          example: 7.2
+          nullable: true
+
+    Error:
+      type: object
+      properties:
+        status:
+          type: string
+          example: error
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+              description: 错误码
+              example: BATCH_NOT_FOUND
+            message:
+              type: string
+              description: 错误信息
+              example: Batch code 'INVALID123' not found
+            details:
+              type: object
+              description: 详细错误信息
+              additionalProperties: true
+        timestamp:
+          type: string
+          format: date-time
+          example: "2026-01-01T18:15:15Z"
+        request_id:
+          type: string
+          example: req_123456789
+
+  responses:
+    UnauthorizedError:
+      description: 未授权 - API Key 缺失或无效
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            status: error
+            error:
+              code: UNAUTHORIZED
+              message: Missing or invalid API key
+            timestamp: "2026-01-01T18:15:15Z"
+
+    BadRequestError:
+      description: 请求参数错误
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            status: error
+            error:
+              code: INVALID_PARAMETERS
+              message: Invalid request parameters
+              details:
+                risk_score_min: must be between 0 and 10
+            timestamp: "2026-01-01T18:15:15Z"
+
+    ValidationError:
+      description: 数据验证失败
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            status: error
+            error:
+              code: VALIDATION_ERROR
+              message: Request validation failed
+              details:
+                age: must be between 0 and 120
+                sex: must be one of M, F, U
+            timestamp: "2026-01-01T18:15:15Z"
+
+    RateLimitError:
+      description: 超出速率限制
+      headers:
+        X-RateLimit-Limit:
+          description: 每分钟请求限制
+          schema:
+            type: integer
+            example: 60
+        X-RateLimit-Remaining:
+          description: 剩余请求次数
+          schema:
+            type: integer
+            example: 0
+        X-RateLimit-Reset:
+          description: 限制重置时间 (Unix 时间戳)
+          schema:
+            type: integer
+            example: 1640995200
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            status: error
+            error:
+              code: RATE_LIMIT_EXCEEDED
+              message: Rate limit exceeded. Please try again later.
+              details:
+                limit: 60
+                reset_at: "2026-01-01T18:20:00Z"
+            timestamp: "2026-01-01T18:15:15Z"

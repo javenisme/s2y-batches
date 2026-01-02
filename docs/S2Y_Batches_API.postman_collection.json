@@ -1,0 +1,368 @@
+{
+  "info": {
+    "name": "S2Y Batches API",
+    "description": "疫苗批次风险评估和数据分析 SAAS 服务 API\n\n## 使用说明\n1. 导入此 Collection 到 Postman\n2. 设置环境变量 `api_key` 为你的 API Key\n3. 设置环境变量 `base_url` (生产: https://s2y-batches.javenisme.workers.dev, 开发: http://localhost:8000)\n4. 开始测试 API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "12345678"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{api_key}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/health",
+              "host": ["{{base_url}}"],
+              "path": ["health"]
+            },
+            "description": "检查 API 服务状态"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Batch",
+      "item": [
+        {
+          "name": "Get Batch Details",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/batch/:batch_code",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "batch", ":batch_code"],
+              "variable": [
+                {
+                  "key": "batch_code",
+                  "value": "EN6201",
+                  "description": "疫苗批次代码"
+                }
+              ]
+            },
+            "description": "获取指定疫苗批次的详细信息"
+          },
+          "response": [
+            {
+              "name": "Success Example",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/v1/batch/EN6201",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "v1", "batch", "EN6201"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"batch_code\": \"EN6201\",\n  \"manufacturer\": \"Pfizer\",\n  \"vaccine_type\": \"COVID-19\",\n  \"total_reports\": 1523,\n  \"deaths\": 45,\n  \"disabilities\": 23,\n  \"life_threatening\": 67,\n  \"hospitalizations\": 234,\n  \"severe_reports_pct\": 24.36,\n  \"lethality_pct\": 2.95,\n  \"risk_score\": 7.2,\n  \"risk_level\": \"High\",\n  \"first_report_date\": \"2021-01-15\",\n  \"last_report_date\": \"2023-06-30\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Search Batches",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/batch/search?manufacturer=Pfizer&risk_score_min=5.0&limit=20",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "batch", "search"],
+              "query": [
+                {
+                  "key": "manufacturer",
+                  "value": "Pfizer",
+                  "description": "制造商名称"
+                },
+                {
+                  "key": "risk_score_min",
+                  "value": "5.0",
+                  "description": "最低风险分数 (0-10)"
+                },
+                {
+                  "key": "risk_score_max",
+                  "value": "10.0",
+                  "description": "最高风险分数 (0-10)",
+                  "disabled": true
+                },
+                {
+                  "key": "min_reports",
+                  "value": "10",
+                  "description": "最少报告数量",
+                  "disabled": true
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "description": "返回结果数量 (1-500)"
+                },
+                {
+                  "key": "offset",
+                  "value": "0",
+                  "description": "分页偏移量",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "根据条件搜索疫苗批次"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Top Symptoms",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/batch/:batch_code/top-symptoms?limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "batch", ":batch_code", "top-symptoms"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "10",
+                  "description": "返回症状数量 (1-100)"
+                }
+              ],
+              "variable": [
+                {
+                  "key": "batch_code",
+                  "value": "EN6201",
+                  "description": "疫苗批次代码"
+                }
+              ]
+            },
+            "description": "获取指定批次最常见的不良反应症状"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Risk Assessment",
+      "item": [
+        {
+          "name": "Assess Personalized Risk",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"batch_code\": \"EN6201\",\n  \"user_profile\": {\n    \"age\": 45,\n    \"sex\": \"M\",\n    \"pre_existing_conditions\": [\"hypertension\", \"diabetes\"],\n    \"previous_covid_infection\": false,\n    \"dose_number\": 2\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/risk/assess",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "risk", "assess"]
+            },
+            "description": "根据用户个人资料评估疫苗批次的个性化风险"
+          },
+          "response": [
+            {
+              "name": "Success Example",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"batch_code\": \"EN6201\",\n  \"user_profile\": {\n    \"age\": 45,\n    \"sex\": \"M\",\n    \"pre_existing_conditions\": [\"hypertension\"],\n    \"previous_covid_infection\": false,\n    \"dose_number\": 2\n  }\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/v1/risk/assess",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "v1", "risk", "assess"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"batch_code\": \"EN6201\",\n  \"manufacturer\": \"Pfizer\",\n  \"risk_score\": 7.2,\n  \"risk_level\": \"Medium\",\n  \"confidence\": 0.85,\n  \"risk_factors\": [\n    {\n      \"factor\": \"Age 45 (40-50)\",\n      \"impact\": \"+1.0\",\n      \"description\": \"Middle-aged individuals show moderately elevated risk\"\n    },\n    {\n      \"factor\": \"Pre-existing conditions\",\n      \"impact\": \"+0.8\",\n      \"description\": \"Conditions (hypertension) may increase risk\"\n    }\n  ],\n  \"comparative_stats\": {\n    \"batch_avg_severity\": 6.5,\n    \"global_avg_severity\": 4.2,\n    \"percentile\": 75\n  },\n  \"timestamp\": \"2026-01-01T18:15:15Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Batch Risk Stats",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/risk/batch/:batch_code",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "risk", "batch", ":batch_code"],
+              "variable": [
+                {
+                  "key": "batch_code",
+                  "value": "EN6201",
+                  "description": "疫苗批次代码"
+                }
+              ]
+            },
+            "description": "获取批次的聚合风险统计数据(无个性化)"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Examples - Different User Profiles",
+      "item": [
+        {
+          "name": "Young Adult (Low Risk)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"batch_code\": \"EN6201\",\n  \"user_profile\": {\n    \"age\": 25,\n    \"sex\": \"F\",\n    \"pre_existing_conditions\": [],\n    \"previous_covid_infection\": false,\n    \"dose_number\": 1\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/risk/assess",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "risk", "assess"]
+            },
+            "description": "年轻成年人,无既往疾病"
+          },
+          "response": []
+        },
+        {
+          "name": "Middle-aged with Conditions",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"batch_code\": \"EN6201\",\n  \"user_profile\": {\n    \"age\": 55,\n    \"sex\": \"M\",\n    \"pre_existing_conditions\": [\"hypertension\", \"diabetes\", \"heart disease\"],\n    \"previous_covid_infection\": false,\n    \"dose_number\": 3\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/risk/assess",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "risk", "assess"]
+            },
+            "description": "中年人,有多种既往疾病"
+          },
+          "response": []
+        },
+        {
+          "name": "Elderly (High Risk)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"batch_code\": \"EN6201\",\n  \"user_profile\": {\n    \"age\": 72,\n    \"sex\": \"F\",\n    \"pre_existing_conditions\": [\"copd\", \"hypertension\"],\n    \"previous_covid_infection\": true,\n    \"dose_number\": 4\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/risk/assess",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "risk", "assess"]
+            },
+            "description": "老年人,有既往疾病,曾感染 COVID-19"
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// 自动添加时间戳",
+          "pm.globals.set('timestamp', new Date().toISOString());"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// 通用测试脚本",
+          "pm.test('Status code is 200', function () {",
+          "    pm.response.to.have.status(200);",
+          "});",
+          "",
+          "pm.test('Response time is less than 2000ms', function () {",
+          "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+          "});",
+          "",
+          "pm.test('Content-Type is application/json', function () {",
+          "    pm.response.to.have.header('Content-Type');",
+          "    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+          "});"
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "https://s2y-batches.javenisme.workers.dev",
+      "type": "string"
+    },
+    {
+      "key": "api_key",
+      "value": "your_api_key_here",
+      "type": "string"
+    }
+  ]
+}

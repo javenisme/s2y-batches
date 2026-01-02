@@ -1,0 +1,6 @@
+{
+  "name": "s2y-batches-api",
+  "main": "api-worker.js",
+  "compatibility_date": "2025-12-14",
+  "compatibility_flags": ["nodejs_compat"]
+}
