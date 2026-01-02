@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Vaccine Batches by ZIP Code</title>
+<link href="https://cdn.datatables.net/1.13.1/css/jquery.dataTables.css" rel="stylesheet" type="text/css"/>
+<link href="forkMeOnGitHub.css" rel="stylesheet" type="text/css"/>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .search-container {
+        background: #f5f5f5;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 30px;
+    }
+
+    .search-box {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+
+    #zipcodeInput {
+        flex: 1;
+        padding: 12px;
+        font-size: 16px;
+        border: 2px solid #ddd;
+        border-radius: 4px;
+    }
+
+    #searchButton {
+        padding: 12px 30px;
+        font-size: 16px;
+        background: #2196F3;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background 0.3s;
+    }
+
+    #searchButton:hover {
+        background: #1976D2;
+    }
+
+    #searchButton:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+    }
+
+    .info-message {
+        color: #666;
+        font-size: 14px;
+        margin-top: 10px;
+    }
+
+    .error-message {
+        color: #d32f2f;
+        background: #ffebee;
+        padding: 10px;
+        border-radius: 4px;
+        margin-top: 10px;
+        display: none;
+    }
+
+    .results-container {
+        display: none;
+    }
+
+    .results-header {
+        background: #e3f2fd;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+
+    .results-header h2 {
+        margin: 0 0 10px 0;
+        color: #1976D2;
+    }
+
+    .results-stats {
+        color: #666;
+        font-size: 14px;
+    }
+
+    .batch-card {
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 15px;
+        transition: box-shadow 0.3s;
+    }
+
+    .batch-card:hover {
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    .batch-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+
+    .batch-code {
+        font-size: 20px;
+        font-weight: bold;
+        color: #2196F3;
+    }
+
+    .batch-provider {
+        color: #666;
+        font-size: 14px;
+    }
+
+    .batch-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin-top: 10px;
+    }
+
+    .stat-item {
+        background: #f5f5f5;
+        padding: 10px;
+        border-radius: 4px;
+    }
+
+    .stat-label {
+        font-size: 12px;
+        color: #666;
+        text-transform: uppercase;
+    }
+
+    .stat-value {
+        font-size: 18px;
+        font-weight: bold;
+        margin-top: 5px;
+    }
+
+    .stat-value.warning {
+        color: #f57c00;
+    }
+
+    .stat-value.danger {
+        color: #d32f2f;
+    }
+
+    .loading {
+        text-align: center;
+        padding: 40px;
+        color: #666;
+    }
+
+    .spinner {
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #2196F3;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 20px;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+</style>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script src="./ZipcodeBatchesProvider.js"></script>
+<script>
+    $(document).ready(function () {
+        const zipcodeInput = $('#zipcodeInput');
+        const searchButton = $('#searchButton');
+        const errorMessage = $('.error-message');
+        const resultsContainer = $('.results-container');
+        const loadingContainer = $('.loading');
+        const batchesGrid = $('#batchesGrid');
+        const resultsZipcode = $('#resultsZipcode');
+        const resultsCount = $('#resultsCount');
+
+        // Search on button click
+        searchButton.on('click', performSearch);
+
+        // Search on Enter key
+        zipcodeInput.on('keypress', function(e) {
+            if (e.which === 13) {
+                performSearch();
+            }
+        });
+
+        function performSearch() {
+            const zipcode = zipcodeInput.val().trim();
+
+            // Validate input
+            if (!zipcode) {
+                showError('Please enter a ZIP code');
+                return;
+            }
+
+            if (!/^\d{5}(-\d{4})?$/.test(zipcode.replace(/\s/g, ''))) {
+                showError('Please enter a valid 5-digit ZIP code');
+                return;
+            }
+
+            // Clear previous results
+            hideError();
+            resultsContainer.hide();
+            loadingContainer.show();
+            searchButton.prop('disabled', true);
+
+            // Fetch batches for this zipcode
+            ZipcodeBatchesProvider.getBatchesByZipcode(zipcode)
+                .then(batches => {
+                    loadingContainer.hide();
+                    searchButton.prop('disabled', false);
+
+                    if (batches.length === 0) {
+                        showError(`No vaccine batches found for ZIP code ${zipcode}`);
+                        return;
+                    }
+
+                    // Display results
+                    displayResults(zipcode, batches);
+                })
+                .catch(error => {
+                    loadingContainer.hide();
+                    searchButton.prop('disabled', false);
+                    showError('Error loading batch data. Please try again.');
+                    console.error('Error:', error);
+                });
+        }
+
+        function displayResults(zipcode, batches) {
+            resultsZipcode.text(zipcode);
+            resultsCount.text(batches.length);
+
+            // Clear previous batches
+            batchesGrid.empty();
+
+            // Create batch cards
+            batches.forEach(batch => {
+                const card = createBatchCard(batch);
+                batchesGrid.append(card);
+            });
+
+            resultsContainer.show();
+        }
+
+        function createBatchCard(batch) {
+            const adverseReportsPer100k = batch.adverseReportsPer100k || 0;
+            const adverseReports = batch.adverseReports || 0;
+
+            // Determine warning level based on adverse reports per 100k
+            let valueClass = '';
+            if (adverseReportsPer100k > 100) {
+                valueClass = 'danger';
+            } else if (adverseReportsPer100k > 50) {
+                valueClass = 'warning';
+            }
+
+            return $(`
+                <div class="batch-card">
+                    <div class="batch-header">
+                        <div>
+                            <div class="batch-code">${batch.batch}</div>
+                            <div class="batch-provider">${batch.provider}</div>
+                        </div>
+                    </div>
+                    <div class="batch-stats">
+                        <div class="stat-item">
+                            <div class="stat-label">Doses Shipped</div>
+                            <div class="stat-value">${batch.doses.toLocaleString()}</div>
+                        </div>
+                        ${batch.adverseReports !== undefined ? `
+                            <div class="stat-item">
+                                <div class="stat-label">Adverse Reports</div>
+                                <div class="stat-value ${valueClass}">${batch.adverseReports.toFixed(2)}</div>
+                            </div>
+                        ` : ''}
+                        ${batch.adverseReportsPer100k !== undefined ? `
+                            <div class="stat-item">
+                                <div class="stat-label">Reports per 100k Doses</div>
+                                <div class="stat-value ${valueClass}">${batch.adverseReportsPer100k.toLocaleString()}</div>
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `);
+        }
+
+        function showError(message) {
+            errorMessage.text(message).show();
+        }
+
+        function hideError() {
+            errorMessage.hide();
+        }
+    });
+</script>
+</head>
+<body>
+<span id="forkongithub"><a href="https://github.com/KnollFrank/HowBadIsMyBatch">Fork me on GitHub</a></span>
+<h1>Vaccine Batches by ZIP Code</h1>
+<p>
+    By Craig Paardekooper
+</p>
+
+<nav style="text-align: center; margin: 20px 0; padding: 15px; background: #f0f0f0; border-radius: 8px;">
+    <a href="batchCodes.html" style="margin: 0 15px; padding: 8px 16px; text-decoration: none; color: #333; font-weight: bold;">📊 Batch Codes</a>
+    <a href="ZipcodeRiskMap.html" style="margin: 0 15px; padding: 8px 16px; text-decoration: none; color: #333; font-weight: bold;">🗺️ Zipcode Risk Map</a>
+    <a href="BatchesByZipcode.html" style="margin: 0 15px; padding: 8px 16px; text-decoration: none; color: #333; font-weight: bold; background: #2196F3; color: white; border-radius: 4px;">📍 Batches by Zipcode</a>
+    <a href="HowBadIsMyBatch.html" style="margin: 0 15px; padding: 8px 16px; text-decoration: none; color: #333; font-weight: bold;">📈 Full Data Table</a>
+</nav>
+
+<div class="search-container">
+    <div class="search-box">
+        <input type="text" id="zipcodeInput" placeholder="Enter ZIP code (e.g., 12345)" maxlength="10">
+        <button id="searchButton">Search</button>
+    </div>
+    <div class="info-message">
+        Enter a 5-digit ZIP code to see which vaccine batches were distributed to that area.
+    </div>
+    <div class="error-message"></div>
+</div>
+
+<div class="loading" style="display: none;">
+    <div class="spinner"></div>
+    <div>Loading batch information...</div>
+</div>
+
+<div class="results-container">
+    <div class="results-header">
+        <h2>Results for ZIP Code: <span id="resultsZipcode"></span></h2>
+        <div class="results-stats">
+            Found <strong><span id="resultsCount">0</span></strong> vaccine batch(es) distributed to this area
+        </div>
+    </div>
+    <div id="batchesGrid"></div>
+</div>
+
+<footer>
+    <dl>
+        <dt>Data Sources:</dt>
+        <dd><a href="https://vaers.hhs.gov/data/datasets.html" target="_blank">Vaccine Adverse Event Reporting System (VAERS)</a></dd>
+        <dd><a href="https://icandecide.org/wp-content/uploads/2022/09/Amended-22-01962-Pfizer-2022-0426-pulled-2022-0823.xlsx" target="_blank">Vaccine Distribution by Zipcode</a></dd>
+        <dt>Last updated:</dt>
+        <dd id="last_updated">December 05, 2025</dd>
+    </dl>
+</footer>
+</body>
+</html>
