@@ -1,13 +1,50 @@
 /**
  * Zipcode Risk Map Visualization
  * Loads and displays zipcode-level vaccine distribution risk data
+ * With caching support for better performance
  */
+
+const DATA_CACHE_KEY = 'zipcode_risk_data';
+const CACHE_EXPIRY_HOURS = 24; // Cache data for 24 hours
 
 let zipcodeData = null;
 let dataTable = null;
 let topRiskChart = null;
 let scatterChart = null;
 let mapInstance = null;
+
+// Check cache and load data
+function getCachedData() {
+    try {
+        const cached = localStorage.getItem(DATA_CACHE_KEY);
+        if (cached) {
+            const parsed = JSON.parse(cached);
+            // Validate cache structure
+            if (parsed && parsed.data && parsed.timestamp) {
+                const now = Date.now();
+                const expiry = parsed.timestamp + (CACHE_EXPIRY_HOURS * 60 * 60 * 1000);
+                
+                if (now < expiry) {
+                    return parsed.data;
+                }
+            }
+        }
+    } catch (e) {
+        console.error('Cache parse error:', e);
+        localStorage.removeItem(DATA_CACHE_KEY);
+    }
+    return null;
+}
+
+// Save data to cache
+function saveDataToCache(data) {
+    const cacheData = {
+        data: data,
+        timestamp: Date.now()
+    };
+    localStorage.setItem(DATA_CACHE_KEY, JSON.stringify(cacheData));
+    console.log('Data cached for ' + CACHE_EXPIRY_HOURS + ' hours');
+}
 
 // Load data and initialize visualizations
 $(document).ready(function() {
@@ -18,12 +55,28 @@ $(document).ready(function() {
 
 async function loadData() {
     try {
-        // Load zipcode summary data
-        const summaryResponse = await fetch('./data/zipcodeRiskMap/ZipcodeRiskSummary.json');
-        const summaryJson = await summaryResponse.json();
+        // Try to get cached data first
+        let cachedSummary = getCachedData();
+        
+        if (cachedSummary && cachedSummary.columns && cachedSummary.data) {
+            // Valid cached data
+            console.log('Using cached data');
+            var summaryJson = cachedSummary;
+        } else {
+            // Load from network
+            const summaryResponse = await fetch('./data/zipcodeRiskMap/ZipcodeRiskSummary.json');
+            if (!summaryResponse.ok) {
+                throw new Error('Failed to fetch summary data: ' + summaryResponse.status);
+            }
+            var summaryJson = await summaryResponse.json();
+            saveDataToCache(summaryJson);
+        }
 
         // Load statistics
         const statsResponse = await fetch('./data/zipcodeRiskMap/ZipcodeRiskStats.json');
+        if (!statsResponse.ok) {
+            throw new Error('Failed to fetch stats: ' + statsResponse.status);
+        }
         const stats = await statsResponse.json();
 
         // Process data
@@ -40,7 +93,17 @@ async function loadData() {
 
     } catch (error) {
         console.error('Error loading data:', error);
-        alert('Failed to load zipcode risk data. Please check the console for details.');
+        // Show error message in the UI
+        const container = document.getElementById('statsContainer');
+        if (container) {
+            container.innerHTML = `
+                <div style="text-align: center; padding: 40px; color: var(--danger);">
+                    <h3>Failed to load data</h3>
+                    <p>${error.message}</p>
+                    <p>Please refresh the page or check your connection.</p>
+                </div>
+            `;
+        }
     }
 }
 

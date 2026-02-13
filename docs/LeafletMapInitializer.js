@@ -7,6 +7,7 @@ class LeafletMapInitializer {
     constructor(containerId, zipcodeData) {
         this.containerId = containerId;
         this.zipcodeData = zipcodeData;
+        this.originalData = [...zipcodeData];
         this.map = null;
         this.heatLayer = null;
         this.markersLayer = null;
@@ -14,6 +15,65 @@ class LeafletMapInitializer {
         this.showHeatmap = true;
         this.showMarkers = true;
         this.heatmapIntensity = 0.5;
+        
+        // Listen for region changes
+        this.setupRegionListener();
+    }
+    
+    setupRegionListener() {
+        const self = this;
+        window.addEventListener('regionChange', function(e) {
+            const region = e.detail.region;
+            self.filterByRegion(region);
+        });
+    }
+    
+    filterByRegion(region) {
+        if (region === 'US') {
+            // Show all data
+            this.zipcodeData = [...this.originalData];
+            this.map.setView([39.8, -98.5], 4);
+        } else {
+            // Filter by state (ZIP code prefix)
+            const stateCode = region.split('-')[1];
+            this.zipcodeData = this.originalData.filter(row => {
+                const zip = row['ZIP Code'] || row['ZIP'];
+                return zip && zip.startsWith(stateCode);
+            });
+            
+            // Zoom to state location
+            const stateCenters = {
+                'CA': [36.7783, -119.4179],
+                'TX': [31.9686, -99.9018],
+                'FL': [27.6648, -81.5158],
+                'NY': [40.7128, -74.0060],
+                'PA': [41.2033, -77.1945],
+                'IL': [40.6331, -89.3985],
+                'OH': [40.4173, -82.9071],
+                'GA': [32.1656, -82.9001],
+                'NC': [35.7596, -79.0193]
+            };
+            
+            const center = stateCenters[stateCode] || [39.8, -98.5];
+            this.map.setView(center, 6);
+        }
+        
+        // Refresh layers
+        this.refreshLayers();
+    }
+    
+    refreshLayers() {
+        // Remove existing layers
+        if (this.heatLayer) {
+            this.map.removeLayer(this.heatLayer);
+        }
+        if (this.markersLayer) {
+            this.map.removeLayer(this.markersLayer);
+        }
+        
+        // Add fresh layers with filtered data
+        this.addHeatLayer();
+        this.addMarkerLayer();
     }
 
     initialize() {

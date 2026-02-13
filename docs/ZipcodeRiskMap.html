@@ -484,8 +484,27 @@
 
 <main class="page-content">
     <div class="page-header">
-        <h1>Zipcode Risk Map</h1>
-        <p>Geographic distribution of COVID-19 vaccine adverse events by ZIP code</p>
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: var(--space-4);">
+            <div>
+                <h1>Zipcode Risk Map</h1>
+                <p>Geographic distribution of COVID-19 vaccine adverse events by ZIP code</p>
+            </div>
+            <div class="region-selector" style="min-width: 200px;">
+                <label for="regionSelect" style="display: block; font-size: var(--text-sm); font-weight: 500; margin-bottom: var(--space-2);">Select Region:</label>
+                <select id="regionSelect" class="input" style="width: 100%;">
+                    <option value="US">United States (All)</option>
+                    <option value="US-CA">United States - California</option>
+                    <option value="US-TX">United States - Texas</option>
+                    <option value="US-FL">United States - Florida</option>
+                    <option value="US-NY">United States - New York</option>
+                    <option value="US-PA">United States - Pennsylvania</option>
+                    <option value="US-IL">United States - Illinois</option>
+                    <option value="US-OH">United States - Ohio</option>
+                    <option value="US-GA">United States - Georgia</option>
+                    <option value="US-NC">United States - North Carolina</option>
+                </select>
+            </div>
+        </div>
     </div>
     
     <div class="info-box">
@@ -603,6 +622,25 @@
 <script>
     // Initialize Lucide icons
     lucide.createIcons();
+    
+    // Region selector - filter map by state
+    const regionSelect = document.getElementById('regionSelect');
+    if (regionSelect) {
+        regionSelect.addEventListener('change', function() {
+            const region = this.value;
+            console.log('Region selected:', region);
+            
+            // Trigger custom event for map to handle
+            const event = new CustomEvent('regionChange', { detail: { region: region } });
+            window.dispatchEvent(event);
+            
+            // Show loading indicator
+            document.getElementById('map').style.opacity = '0.5';
+            setTimeout(() => {
+                document.getElementById('map').style.opacity = '1';
+            }, 300);
+        });
+    }
 </script>
 
 <script src="./LeafletMapInitializer.js"></script>
