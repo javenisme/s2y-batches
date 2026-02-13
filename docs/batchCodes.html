@@ -3,37 +3,178 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Batch Codes of Coronavirus 2019 Vaccines</title>
+<title>Batch Codes - S2Y Batches</title>
+<meta name="description" content="Search and analyze COVID-19 vaccine batch codes. View severity metrics, death rates, and symptom distributions.">
+
+<!-- Favicon -->
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%236366f1' rx='15' width='100' height='100'/><text x='50%25' y='58%25' dominant-baseline='middle' text-anchor='middle' fill='white' font-size='50' font-weight='bold'>S2Y</text></svg>">
+
 <!-- Google tag (gtag.js) -->
 <script async="" src="https://www.googletagmanager.com/gtag/js?id=G-ERHYDH4P64"></script>
 <script>
     window.dataLayer = window.dataLayer || [];
     function gtag() { dataLayer.push(arguments); }
     gtag('js', new Date());
-
     gtag('config', 'G-ERHYDH4P64');
-  </script>
+</script>
+
+<!-- Design System -->
+<link rel="stylesheet" href="styles/variables.css">
+<link rel="stylesheet" href="styles/components.css">
+<link rel="stylesheet" href="styles/navbar.css">
+<link rel="stylesheet" href="styles/main.css">
+
+<!-- DataTables -->
 <link href="https://cdn.datatables.net/1.13.1/css/jquery.dataTables.css" rel="stylesheet" type="text/css"/>
 <link href="forkMeOnGitHub.css" rel="stylesheet" type="text/css"/>
+
+<!-- noUiSlider -->
+<script crossorigin="anonymous" integrity="sha512-T5Bneq9hePRO8JR0S/0lQ7gdW+ceLThvC80UjwkMRz+8q+4DARVZ4dqKoyENC7FcYresjfJ6ubaOgIE35irf4w==" referrerpolicy="no-referrer" src="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.5.1/nouislider.min.js"></script>
+<link crossorigin="anonymous" href="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.5.1/nouislider.css" integrity="sha512-MKxcSu/LDtbIYHBNAWUQwfB3iVoG9xeMCm32QV5hZ/9lFaQZJVaXfz9aFa0IZExWzCpm7OWvp9zq9gVip/nLMg==" referrerpolicy="no-referrer" rel="stylesheet"/>
+
+<!-- jQuery & Plugins -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script charset="utf8" src="https://cdn.datatables.net/1.13.1/js/jquery.dataTables.min.js" type="text/javascript"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.2.0/dist/chart.umd.min.js"></script>
+
+<!-- Lucide Icons -->
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+
+<!-- App Scripts -->
+<script src="./Utils.js"></script>
+<script src="./UIUtils.js"></script>
+<script src="./UrlUtils.js"></script>
+<script src="./DataTablesFilter.js"></script>
+<script src="./ColumnSearch.js"></script>
+<script src="./HistoDescrsProvider.js"></script>
+<script src="./BatchCodeTableInitializer.js"></script>
+<script src="./BatchcodeByCountryBarChartView.js"></script>
+<script src="./BatchcodeByCountryBarChart.js"></script>
+
 <style>
-    /* Batch row expansion styles */
+    /* Page specific overrides */
+    .page-content {
+        padding: var(--space-6);
+        max-width: 1600px;
+        margin: 0 auto;
+    }
+    
+    .page-intro {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: center;
+        gap: var(--space-4);
+        margin-bottom: var(--space-6);
+    }
+    
+    .page-intro-text h1 {
+        font-size: var(--text-2xl);
+        margin-bottom: var(--space-2);
+    }
+    
+    .page-intro-text p {
+        color: var(--muted-foreground);
+        font-size: var(--text-sm);
+    }
+    
+    .page-intro-text p strong {
+        color: var(--foreground);
+    }
+    
+    .tip-box {
+        display: flex;
+        align-items: flex-start;
+        gap: var(--space-3);
+        padding: var(--space-4);
+        background: oklch(0.55 0.2 265 / 0.08);
+        border: 1px solid oklch(0.55 0.2 265 / 0.2);
+        border-radius: var(--radius-lg);
+        font-size: var(--text-sm);
+    }
+    
+    .tip-box svg {
+        flex-shrink: 0;
+        color: var(--primary);
+    }
+    
+    /* Navigation tabs */
+    .nav-tabs {
+        display: flex;
+        gap: var(--space-1);
+        margin-bottom: var(--space-6);
+        padding: var(--space-1);
+        background: var(--muted);
+        border-radius: var(--radius-lg);
+        width: fit-content;
+    }
+    
+    .nav-tabs .nav-tab {
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+        padding: var(--space-2) var(--space-4);
+        font-size: var(--text-sm);
+        font-weight: 500;
+        color: var(--muted-foreground);
+        text-decoration: none;
+        border-radius: var(--radius-md);
+        transition: all var(--transition-fast);
+    }
+    
+    .nav-tabs .nav-tab:hover {
+        color: var(--foreground);
+    }
+    
+    .nav-tabs .nav-tab.active {
+        background: var(--background);
+        color: var(--foreground);
+        box-shadow: var(--shadow-sm);
+    }
+    
+    /* Table styles */
+    #batchCodeTable {
+        width: 100% !important;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-xl);
+        overflow: hidden;
+    }
+    
+    #batchCodeTable thead th {
+        background: var(--muted) !important;
+        color: var(--foreground) !important;
+        font-weight: 600;
+        font-size: var(--text-sm);
+        padding: var(--space-3) var(--space-4) !important;
+        border-bottom: 2px solid var(--border) !important;
+    }
+    
+    #batchCodeTable tbody td {
+        padding: var(--space-3) var(--space-4) !important;
+        font-size: var(--text-sm);
+        border-bottom: 1px solid var(--border) !important;
+    }
+    
     #batchCodeTable tbody tr {
         cursor: pointer;
-        transition: background-color 0.2s;
+        transition: background-color 0.15s ease;
     }
-
+    
     #batchCodeTable tbody tr:hover {
-        background-color: #f5f5f5;
+        background-color: var(--accent) !important;
     }
-
+    
     #batchCodeTable tbody tr.shown {
-        background-color: #e3f2fd;
+        background-color: oklch(0.55 0.2 265 / 0.1) !important;
     }
-
+    
+    /* Batch row expansion */
     .batch-details-container {
         animation: slideDown 0.3s ease-out;
+        background: var(--background);
+        padding: var(--space-4);
     }
-
+    
     @keyframes slideDown {
         from {
             opacity: 0;
@@ -44,99 +185,176 @@
             max-height: 1000px;
         }
     }
-
-    .loading-message {
-        color: #666;
-        font-style: italic;
-        padding: 10px;
-    }
-
-    /* Improve chart container */
+    
     .chart-container {
-        background: white;
-        padding: 15px;
-        border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        background: var(--background);
+        padding: var(--space-4);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-sm);
     }
-
-    /* Improve table appearance in expanded row */
-    .table-container table {
-        background: white;
-        border-radius: 8px;
-        overflow: hidden;
+    
+    /* Footer */
+    .page-footer {
+        margin-top: var(--space-8);
+        padding: var(--space-6);
+        background: var(--muted);
+        border-radius: var(--radius-xl);
+    }
+    
+    .page-footer dl {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--space-4);
+        font-size: var(--text-sm);
+    }
+    
+    .page-footer dt {
+        font-weight: 600;
+        color: var(--foreground);
+    }
+    
+    .page-footer dd {
+        color: var(--muted-foreground);
+    }
+    
+    .page-footer dd a {
+        color: var(--primary);
+    }
+    
+    /* Loading */
+    .loading-message {
+        color: var(--muted-foreground);
+        font-style: italic;
+        padding: var(--space-4);
+    }
+    
+    @media (max-width: 768px) {
+        .page-content {
+            padding: var(--space-4);
+        }
+        
+        .page-intro {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        
+        .nav-tabs {
+            width: 100%;
+            overflow-x: auto;
+        }
     }
 </style>
-<script crossorigin="anonymous" integrity="sha512-T5Bneq9hePRO8JR0S/0lQ7gdW+ceLThvC80UjwkMRz+8q+4DARVZ4dqKoyENC7FcYresjfJ6ubaOgIE35irf4w==" referrerpolicy="no-referrer" src="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.5.1/nouislider.min.js"></script>
-<link crossorigin="anonymous" href="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.5.1/nouislider.css" integrity="sha512-MKxcSu/LDtbIYHBNAWUQwfB3iVoG9xeMCm32QV5hZ/9lFaQZJVaXfz9aFa0IZExWzCpm7OWvp9zq9gVip/nLMg==" referrerpolicy="no-referrer" rel="stylesheet"/>
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-<script charset="utf8" src="https://cdn.datatables.net/1.13.1/js/jquery.dataTables.min.js" type="text/javascript"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.2.0/dist/chart.umd.min.js"></script>
-<script src="./Utils.js"></script>
-<script src="./UIUtils.js"></script>
-<script src="./UrlUtils.js"></script>
-<script src="./DataTablesFilter.js"></script>
-<script src="./ColumnSearch.js"></script>
-<script src="./HistoDescrsProvider.js"></script>
-<script src="./BatchCodeTableInitializer.js"></script>
-<script src="./BatchcodeByCountryBarChartView.js"></script>
-<script src="./BatchcodeByCountryBarChart.js"></script>
-<script>
-    $(document).ready(function () {
-      const urlSearchParams = new URLSearchParams(window.location.search);
-      new BatchCodeTableInitializer().initialize(
-        {
-          batchCodeTableElement: $('#batchCodeTable'),
-          showCountriesColumn: UrlUtils.isSearchParamYES(urlSearchParams, 'showCountriesColumn'),
-          showDataTablesFilter: UrlUtils.isSearchParamYES(urlSearchParams, 'showDataTablesFilter'),
-        });
-    });
-  </script>
 </head>
 <body>
-<h1>Batch Codes of Coronavirus 2019 Vaccines</h1>
-<p>
-    By Craig Paardekooper
-  </p>
-<p style="background: #e3f2fd; padding: 10px; border-radius: 5px; border-left: 4px solid #2196F3;">
-    <strong>💡 Tip:</strong> Click on any row to expand and view detailed symptom information for that batch.
-  </p>
-<nav style="text-align: center; margin: 20px 0; padding: 15px; background: #f0f0f0; border-radius: 8px;">
-    <a href="batchCodes.html" style="margin: 0 15px; padding: 8px 16px; text-decoration: none; color: #333; font-weight: bold;">📊 Batch Codes</a>
-    <a href="ZipcodeRiskMap.html" style="margin: 0 15px; padding: 8px 16px; text-decoration: none; color: #333; font-weight: bold;">🗺️ Zipcode Risk Map</a>
-    <a href="HowBadIsMyBatch.html" style="margin: 0 15px; padding: 8px 16px; text-decoration: none; color: #333; font-weight: bold;">📈 Full Data Table</a>
-  </nav>
-<table class="display" id="batchCodeTable">
-<thead>
-<tr>
-<th>Batch</th>
-<th>Adverse Reaction Reports</th>
-<th>Deaths</th>
-<th>Disabilities</th>
-<th>Life-Threatening Illnesses</th>
-<th>Hospitalizations</th>
-<th>Company</th>
-<th>Severe reports</th>
-<th>Lethality</th>
-<th>Countries</th>
-</tr>
-</thead>
-</table>
-<footer>
-<dl>
-<dt>Data Source:</dt>
-<dd><a href="https://vaers.hhs.gov/data/datasets.html" target="_blank">Vaccine Adverse Event Reporting System
-          (VAERS)</a></dd>
-<dt>Last updated:</dt>
-<dd id="last_updated">February 06, 2026</dd>
-</dl>
-<span id="forkongithub"><a href="https://github.com/KnollFrank/HowBadIsMyBatch" target="_blank">Fork me on
-        GitHub</a></span>
-<div class="clearfix"></div>
-</footer>
+<!-- Navigation -->
+<nav class="navbar">
+    <a href="index.html" class="navbar-brand">
+        <span class="navbar-logo">S2Y</span>
+        <span class="sm-hidden">S2Y Batches</span>
+    </a>
+    
+    <button class="navbar-toggle" aria-label="Toggle menu">
+        <i data-lucide="menu"></i>
+    </button>
+    
+    <div class="navbar-menu">
+        <a href="batchCodes.html" class="navbar-item active" data-page="batchcodes">
+            <i data-lucide="table-2"></i>
+            <span>Batch Codes</span>
+        </a>
+        <a href="ZipcodeRiskMap.html" class="navbar-item" data-page="map">
+            <i data-lucide="map-pin"></i>
+            <span>Risk Map</span>
+        </a>
+        <a href="api-docs.html" class="navbar-item" data-page="api">
+            <i data-lucide="book-open"></i>
+            <span>API Docs</span>
+        </a>
+    </div>
+    
+    <div class="navbar-actions">
+        <a href="https://github.com/javenisme/s2y-batches" class="navbar-github" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
+            <i data-lucide="github"></i>
+        </a>
+    </div>
+</nav>
+
+<main class="page-content">
+    <div class="page-intro">
+        <div class="page-intro-text">
+            <h1>Batch Code Analysis</h1>
+            <p>
+                Data Source: <strong>VAERS</strong> | 
+                Last updated: <strong id="last_updated">February 06, 2026</strong>
+            </p>
+        </div>
+        
+        <div class="tip-box">
+            <i data-lucide="lightbulb" style="width: 20px; height: 20px;"></i>
+            <span><strong>Tip:</strong> Click on any row to expand and view detailed symptom information for that batch.</span>
+        </div>
+    </div>
+    
+    <nav class="nav-tabs">
+        <a href="batchCodes.html" class="nav-tab active">
+            <i data-lucide="table-2" style="width: 16px; height: 16px;"></i>
+            Batch Codes
+        </a>
+        <a href="ZipcodeRiskMap.html" class="nav-tab">
+            <i data-lucide="map" style="width: 16px; height: 16px;"></i>
+            Zipcode Risk Map
+        </a>
+        <a href="HowBadIsMyBatch.html" class="nav-tab">
+            <i data-lucide="bar-chart-3" style="width: 16px; height: 16px;"></i>
+            Full Data Table
+        </a>
+    </nav>
+    
+    <table class="display" id="batchCodeTable">
+    <thead>
+    <tr>
+    <th>Batch</th>
+    <th>Adverse Reaction Reports</th>
+    <th>Deaths</th>
+    <th>Disabilities</th>
+    <th>Life-Threatening Illnesses</th>
+    <th>Hospitalizations</th>
+    <th>Company</th>
+    <th>Severe reports</th>
+    <th>Lethality</th>
+    <th>Countries</th>
+    </tr>
+    </thead>
+    </table>
+    
+    <footer class="page-footer">
+    <dl>
+        <dt>Data Source:</dt>
+        <dd><a href="https://vaers.hhs.gov/data/datasets.html" target="_blank">Vaccine Adverse Event Reporting System (VAERS)</a></dd>
+    </dl>
+    <span id="forkongithub"><a href="https://github.com/KnollFrank/HowBadIsMyBatch" target="_blank">Fork me on GitHub</a></span>
+    </footer>
+</main>
+
 <template id="template-chartWithSlider">
 <div class="chartContainer">
 <canvas class="canvas"></canvas>
 </div>
 </template>
+
+<script>
+    $(document).ready(function () {
+        // Initialize Lucide icons
+        lucide.createIcons();
+        
+        const urlSearchParams = new URLSearchParams(window.location.search);
+        new BatchCodeTableInitializer().initialize(
+            {
+                batchCodeTableElement: $('#batchCodeTable'),
+                showCountriesColumn: UrlUtils.isSearchParamYES(urlSearchParams, 'showCountriesColumn'),
+                showDataTablesFilter: UrlUtils.isSearchParamYES(urlSearchParams, 'showDataTablesFilter'),
+            });
+    });
+</script>
 </body>
 </html>

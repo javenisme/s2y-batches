@@ -1,205 +1,214 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="refresh" content="0; url=batchCodeTable.html" />
-    <title>S2Y Batches - 疫苗批次风险评估平台</title>
-    <meta name="description" content="S2Y Batches - 疫苗批次风险评估和数据分析 SAAS 平台">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-
-        .container {
-            max-width: 900px;
-            width: 100%;
-        }
-
-        .header {
-            text-align: center;
-            color: white;
-            margin-bottom: 50px;
-        }
-
-        h1 {
-            font-size: 3em;
-            margin-bottom: 15px;
-            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-        }
-
-        .subtitle {
-            font-size: 1.3em;
-            opacity: 0.95;
-        }
-
-        .cards {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 30px;
-            margin-bottom: 40px;
-        }
-
-        .card {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 40px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            cursor: pointer;
-            text-decoration: none;
-            color: inherit;
-            display: block;
-        }
-
-        .card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.4);
-        }
-
-        .card-icon {
-            font-size: 4em;
-            margin-bottom: 20px;
-            display: block;
-        }
-
-        .card h2 {
-            color: #667eea;
-            font-size: 1.8em;
-            margin-bottom: 15px;
-        }
-
-        .card p {
-            color: #666;
-            font-size: 1.05em;
-            line-height: 1.6;
-            margin-bottom: 20px;
-        }
-
-        .card-features {
-            list-style: none;
-            margin-bottom: 20px;
-        }
-
-        .card-features li {
-            color: #555;
-            padding: 8px 0;
-            border-bottom: 1px solid #eee;
-        }
-
-        .card-features li:last-child {
-            border-bottom: none;
-        }
-
-        .card-features li::before {
-            content: "✓ ";
-            color: #10b981;
-            font-weight: bold;
-            margin-right: 8px;
-        }
-
-        .btn {
-            display: inline-block;
-            background: #667eea;
-            color: white;
-            padding: 12px 30px;
-            border-radius: 10px;
-            text-decoration: none;
-            font-weight: 600;
-            transition: background 0.3s ease;
-        }
-
-        .btn:hover {
-            background: #5568d3;
-        }
-
-        .footer {
-            text-align: center;
-            color: white;
-            opacity: 0.9;
-        }
-
-        .footer a {
-            color: white;
-            text-decoration: none;
-            font-weight: 600;
-        }
-
-        .footer a:hover {
-            text-decoration: underline;
-        }
-
-        @media (max-width: 768px) {
-            h1 {
-                font-size: 2em;
-            }
-
-            .cards {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>S2Y Batches - Vaccine Batch Risk Assessment Platform</title>
+  <meta name="description" content="Analyze COVID-19 vaccine batch safety data. View adverse event reports, risk maps, and comprehensive statistics.">
+  
+  <!-- Favicon -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%236366f1' rx='15' width='100' height='100'/><text x='50%25' y='58%25' dominant-baseline='middle' text-anchor='middle' fill='white' font-size='50' font-weight='bold'>S2Y</text></svg>">
+  
+  <!-- Design System -->
+  <link rel="stylesheet" href="styles/variables.css">
+  <link rel="stylesheet" href="styles/components.css">
+  <link rel="stylesheet" href="styles/navbar.css">
+  <link rel="stylesheet" href="styles/main.css">
+  
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-ERHYDH4P64"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-ERHYDH4P64');
+  </script>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>🚀 S2Y Batches</h1>
-            <p class="subtitle">疫苗批次风险评估和数据分析 SAAS 平台</p>
-        </div>
-
-        <div class="cards">
-            <a href="batchCodeTable.html" class="card">
-                <span class="card-icon">📊</span>
-                <h2>数据可视化</h2>
-                <p>查看疫苗批次数据、风险地图和统计分析</p>
-                <ul class="card-features">
-                    <li>批次代码查询</li>
-                    <li>邮编风险地图</li>
-                    <li>不良事件统计</li>
-                    <li>交互式图表</li>
-                </ul>
-                <span class="btn">进入应用 →</span>
-            </a>
-
-            <a href="api-docs.html" class="card">
-                <span class="card-icon">🔌</span>
-                <h2>API 文档</h2>
-                <p>为开发者提供完整的 API 接口文档</p>
-                <ul class="card-features">
-                    <li>RESTful API</li>
-                    <li>静态数据访问</li>
-                    <li>代码示例</li>
-                    <li>Postman Collection</li>
-                </ul>
-                <span class="btn">查看文档 →</span>
-            </a>
-        </div>
-
-        <div class="footer">
-            <p>
-                <strong>API 端点:</strong> 
-                <a href="https://s2y-batches-api.javenisme.workers.dev/health" target="_blank">
-                    https://s2y-batches-api.javenisme.workers.dev
-                </a>
-            </p>
-            <p style="margin-top: 10px;">
-                <a href="https://github.com/javenisme/s2y-batches" target="_blank">GitHub</a> | 
-                <a href="mailto:support@s2y-batches.com">技术支持</a>
-            </p>
-        </div>
+  <!-- Navigation -->
+  <nav class="navbar">
+    <a href="index.html" class="navbar-brand">
+      <span class="navbar-logo">S2Y</span>
+      <span class="sm-hidden">S2Y Batches</span>
+    </a>
+    
+    <button class="navbar-toggle" aria-label="Toggle menu">
+      <i data-lucide="menu"></i>
+    </button>
+    
+    <div class="navbar-menu">
+      <a href="batchCodes.html" class="navbar-item" data-page="batchcodes">
+        <i data-lucide="table-2"></i>
+        <span>Batch Codes</span>
+      </a>
+      <a href="ZipcodeRiskMap.html" class="navbar-item" data-page="map">
+        <i data-lucide="map-pin"></i>
+        <span>Risk Map</span>
+      </a>
+      <a href="api-docs.html" class="navbar-item" data-page="api">
+        <i data-lucide="book-open"></i>
+        <span>API Docs</span>
+      </a>
     </div>
+    
+    <div class="navbar-actions">
+      <a href="https://github.com/javenisme/s2y-batches" class="navbar-github" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
+        <i data-lucide="github"></i>
+      </a>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="container">
+      <h1 class="hero-title animate-slideDown">S2Y Batches</h1>
+      <p class="hero-subtitle animate-slideUp">
+        Vaccine batch risk assessment platform. Analyze adverse event data, 
+        visualize geographic distribution, and make informed decisions.
+      </p>
+      
+      <!-- Search Box -->
+      <div class="search-box animate-scaleIn">
+        <i data-lucide="search" class="search-icon"></i>
+        <input 
+          type="text" 
+          class="search-input" 
+          placeholder="Search batch codes (e.g., EJ6795, FC3180)"
+          id="quickSearch"
+          autocomplete="off"
+        >
+      </div>
+      
+      <!-- Quick Stats -->
+      <div class="stats-grid animate-slideUp stagger-2">
+        <div class="stat-card">
+          <div class="stat-value" id="totalBatches">-</div>
+          <div class="stat-label">Batch Codes</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="totalReports">-</div>
+          <div class="stat-label">Adverse Reports</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="totalDeaths">-</div>
+          <div class="stat-label">Reported Deaths</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section class="container">
+    <div class="features-grid">
+      <a href="batchCodes.html" class="feature-card animate-slideUp stagger-1">
+        <div class="feature-icon">
+          <i data-lucide="table-2"></i>
+        </div>
+        <h3 class="feature-title">Batch Code Analysis</h3>
+        <p class="feature-description">
+          Search and analyze COVID-19 vaccine batch codes. View severity metrics, 
+          death rates, hospitalization data, and symptom distributions.
+        </p>
+      </a>
+      
+      <a href="ZipcodeRiskMap.html" class="feature-card animate-slideUp stagger-2">
+        <div class="feature-icon">
+          <i data-lucide="map"></i>
+        </div>
+        <h3 class="feature-title">Geographic Risk Map</h3>
+        <p class="feature-description">
+          Explore vaccine distribution and adverse event data by zipcode. 
+          Interactive maps with detailed provider-level analysis.
+        </p>
+      </a>
+      
+      <a href="api-docs.html" class="feature-card animate-slideUp stagger-3">
+        <div class="feature-icon">
+          <i data-lucide="code-2"></i>
+        </div>
+        <h3 class="feature-title">RESTful API</h3>
+        <p class="feature-description">
+          Programmatic access to all datasets. RESTful endpoints with JSON responses, 
+          comprehensive documentation, and Postman collections.
+        </p>
+      </a>
+    </div>
+  </section>
+
+  <!-- Data Sources -->
+  <section class="container" style="padding-bottom: var(--space-12);">
+    <h2 style="text-align: center; margin-bottom: var(--space-8);">Data Sources</h2>
+    <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: var(--space-4);">
+      <span class="badge badge-primary">VAERS</span>
+      <span class="badge badge-success">EudraVigilance</span>
+      <span class="badge badge-warning">Pfizer Distribution</span>
+      <span class="badge badge-danger">CDC Data</span>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-links">
+          <a href="batchCodes.html" class="footer-link">Batch Codes</a>
+          <a href="ZipcodeRiskMap.html" class="footer-link">Risk Map</a>
+          <a href="api-docs.html" class="footer-link">API Docs</a>
+          <a href="https://github.com/javenisme/s2y-batches" class="footer-link" target="_blank">GitHub</a>
+        </div>
+        <p class="footer-copyright">
+          Data from VAERS (Vaccine Adverse Event Reporting System). 
+          For informational purposes only.
+        </p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Initialize Lucide icons
+    lucide.createIcons();
+    
+    // Load quick stats
+    async function loadStats() {
+      try {
+        const response = await fetch('data/batchCodeTables/Global.json');
+        const data = await response.json();
+        
+        const columns = data.columns;
+        const rows = data.data;
+        
+        // Find column indices
+        const batchIndex = 0;
+        const reportsIndex = columns.indexOf('Adverse Reaction Reports');
+        const deathsIndex = columns.indexOf('Deaths');
+        
+        const totalBatches = rows.length;
+        const totalReports = rows.reduce((sum, row) => sum + (row[reportsIndex] || 0), 0);
+        const totalDeaths = rows.reduce((sum, row) => sum + (row[deathsIndex] || 0), 0);
+        
+        document.getElementById('totalBatches').textContent = totalBatches.toLocaleString();
+        document.getElementById('totalReports').textContent = totalReports.toLocaleString();
+        document.getElementById('totalDeaths').textContent = totalDeaths.toLocaleString();
+      } catch (e) {
+        console.error('Failed to load stats:', e);
+      }
+    }
+    
+    // Quick search redirect
+    document.getElementById('quickSearch').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        const query = e.target.value.trim();
+        if (query) {
+          window.location.href = `batchCodes.html?search=${encodeURIComponent(query)}`;
+        }
+      }
+    });
+    
+    // Load stats on page load
+    loadStats();
+  </script>
 </body>
 </html>

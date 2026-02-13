@@ -1,0 +1,398 @@
+/* ============================================
+   S2Y Batches - Main Styles
+   ============================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+@import './variables.css';
+@import './components.css';
+
+/* ===== Custom Project Styles ===== */
+
+/* Header / Hero */
+.hero {
+  padding: var(--space-20) 0;
+  text-align: center;
+  background: linear-gradient(
+    135deg,
+    oklch(0.55 0.2 265 / 0.05) 0%,
+    oklch(0.55 0.2 265 / 0.02) 100%
+  );
+  border-bottom: 1px solid var(--border);
+}
+
+.hero-title {
+  font-size: var(--text-5xl);
+  font-weight: 700;
+  color: var(--foreground);
+  margin-bottom: var(--space-4);
+  letter-spacing: -0.025em;
+}
+
+.hero-subtitle {
+  font-size: var(--text-xl);
+  color: var(--muted-foreground);
+  max-width: 600px;
+  margin: 0 auto var(--space-8);
+}
+
+/* Feature Cards */
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: var(--space-6);
+  padding: var(--space-12) 0;
+}
+
+.feature-card {
+  padding: var(--space-6);
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  transition: all var(--transition-base);
+}
+
+.feature-card:hover {
+  border-color: var(--primary);
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-4px);
+}
+
+.feature-icon {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: oklch(0.55 0.2 265 / 0.1);
+  color: var(--primary);
+  border-radius: var(--radius-lg);
+  margin-bottom: var(--space-4);
+  font-size: 24px;
+}
+
+.feature-title {
+  font-size: var(--text-lg);
+  font-weight: 600;
+  margin-bottom: var(--space-2);
+}
+
+.feature-description {
+  font-size: var(--text-sm);
+  color: var(--muted-foreground);
+  line-height: 1.6;
+}
+
+/* Footer */
+.footer {
+  padding: var(--space-8) 0;
+  border-top: 1px solid var(--border);
+  background: var(--muted);
+}
+
+.footer-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+  text-align: center;
+}
+
+.footer-links {
+  display: flex;
+  gap: var(--space-6);
+  list-style: none;
+}
+
+.footer-link {
+  font-size: var(--text-sm);
+  color: var(--muted-foreground);
+}
+
+.footer-link:hover {
+  color: var(--foreground);
+}
+
+.footer-copyright {
+  font-size: var(--text-sm);
+  color: var(--muted-foreground);
+}
+
+/* Page Header */
+.page-header {
+  padding: var(--space-8) 0;
+  border-bottom: 1px solid var(--border);
+  background: var(--background);
+}
+
+.page-title {
+  font-size: var(--text-3xl);
+  font-weight: 700;
+  margin-bottom: var(--space-2);
+}
+
+.page-description {
+  font-size: var(--text-base);
+  color: var(--muted-foreground);
+}
+
+/* Stats Grid */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-4);
+}
+
+.stat-card {
+  padding: var(--space-4);
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  text-align: center;
+}
+
+.stat-value {
+  font-size: var(--text-3xl);
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.stat-label {
+  font-size: var(--text-sm);
+  color: var(--muted-foreground);
+  margin-top: var(--space-1);
+}
+
+/* Search Box */
+.search-box {
+  position: relative;
+  max-width: 500px;
+  margin: 0 auto var(--space-6);
+}
+
+.search-input {
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  padding-left: var(--space-12);
+  font-size: var(--text-base);
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  transition: all var(--transition-fast);
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px oklch(0.55 0.2 265 / 0.15);
+}
+
+.search-icon {
+  position: absolute;
+  left: var(--space-4);
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted-foreground);
+  pointer-events: none;
+}
+
+/* DataTables Overrides */
+.dataTables_wrapper {
+  padding: var(--space-4) 0;
+}
+
+.dataTables_filter label,
+.dataTables_length label {
+  font-size: var(--text-sm);
+  color: var(--foreground);
+}
+
+.dataTables_filter input,
+.dataTables_length select {
+  margin-left: var(--space-2);
+  padding: var(--space-1) var(--space-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--background);
+  color: var(--foreground);
+}
+
+.dataTables_info,
+.dataTables_paginate {
+  font-size: var(--text-sm);
+  color: var(--muted-foreground);
+}
+
+.paginate_button {
+  padding: var(--space-1) var(--space-2);
+  margin: 0 var(--space-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--background);
+  color: var(--foreground);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.paginate_button:hover {
+  background: var(--accent);
+}
+
+.paginate_button.current {
+  background: var(--primary);
+  color: var(--primary-foreground);
+  border-color: var(--primary);
+}
+
+/* Chart Container */
+.chart-container {
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  padding: var(--space-6);
+  margin: var(--space-6) 0;
+}
+
+.chart-title {
+  font-size: var(--text-lg);
+  font-weight: 600;
+  margin-bottom: var(--space-4);
+}
+
+/* Map Container */
+.map-container {
+  height: 500px;
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+
+.map-controls {
+  display: flex;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  background: var(--background);
+  border-bottom: 1px solid var(--border);
+}
+
+/* API Docs */
+.api-endpoint {
+  margin-bottom: var(--space-6);
+  padding: var(--space-4);
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+
+.api-method {
+  display: inline-block;
+  padding: var(--space-1) var(--space-2);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  font-family: var(--font-mono);
+  border-radius: var(--radius-sm);
+  margin-right: var(--space-2);
+}
+
+.api-method-get {
+  background: oklch(0.55 0.15 150 / 0.15);
+  color: var(--success);
+}
+
+.api-method-post {
+  background: oklch(0.55 0.2 265 / 0.15);
+  color: var(--primary);
+}
+
+.api-method-put {
+  background: oklch(0.65 0.15 85 / 0.15);
+  color: var(--warning);
+}
+
+.api-method-delete {
+  background: oklch(0.55 0.18 25 / 0.15);
+  color: var(--danger);
+}
+
+.api-path {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--foreground);
+}
+
+/* Loading Overlay */
+.loading-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--background);
+  opacity: 0.9;
+  z-index: var(--z-modal);
+}
+
+.loading-spinner {
+  width: 48px;
+  height: 48px;
+  border: 3px solid var(--border);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Tooltips */
+.tooltip {
+  position: relative;
+}
+
+.tooltip::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%) translateY(-4px);
+  padding: var(--space-1) var(--space-2);
+  font-size: var(--text-xs);
+  white-space: nowrap;
+  background: var(--foreground);
+  color: var(--background);
+  border-radius: var(--radius-sm);
+  opacity: 0;
+  pointer-events: none;
+  transition: all var(--transition-fast);
+}
+
+.tooltip:hover::after {
+  opacity: 1;
+  transform: translateX(-50%) translateY(-8px);
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .hero-title {
+    font-size: var(--text-3xl);
+  }
+  
+  .hero-subtitle {
+    font-size: var(--text-lg);
+  }
+  
+  .features-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .navbar {
+    padding: var(--space-3);
+  }
+  
+  .map-container {
+    height: 400px;
+  }
+}
