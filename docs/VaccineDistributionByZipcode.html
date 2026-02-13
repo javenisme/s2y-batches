@@ -3,51 +3,246 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Pfizer Vaccine Distribution by ZIP Code</title>
+<title>Vaccine Distribution by ZIP Code - S2Y Batches</title>
+<meta name="description" content="Pfizer vaccine distribution data by ZIP code with adverse event statistics.">
+
+<!-- Favicon -->
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%236366f1' rx='15' width='100' height='100'/><text x='50%25' y='58%25' dominant-baseline='middle' text-anchor='middle' fill='white' font-size='50' font-weight='bold'>S2Y</text></svg>">
+
+<!-- Design System -->
+<link rel="stylesheet" href="styles/variables.css">
+<link rel="stylesheet" href="styles/components.css">
+<link rel="stylesheet" href="styles/navbar.css">
+<link rel="stylesheet" href="styles/main.css">
+
+<!-- DataTables -->
 <link href="https://cdn.datatables.net/1.13.1/css/jquery.dataTables.css" rel="stylesheet" type="text/css"/>
 <link href="forkMeOnGitHub.css" rel="stylesheet" type="text/css"/>
+
+<!-- jQuery & DataTables -->
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 <script charset="utf8" src="https://cdn.datatables.net/1.13.1/js/jquery.dataTables.min.js" type="text/javascript"></script>
+
+<!-- Lucide Icons -->
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+
+<!-- App Scripts -->
 <script src="./Utils.js"></script>
 <script src="./UIUtils.js"></script>
 <script src="./DataTablesFilter.js"></script>
 <script src="./VaccineDistributionByZipcodeTableInitializer.js"></script>
-<script>
-        $(document).ready(function () {
-            const tableInitializer =
-                new VaccineDistributionByZipcodeTableInitializer(
-                    {
-                        tableElement: $('#vaccineDistributionByZipcodeTable')
-                    });
-            tableInitializer.initialize();
-        });
-    </script>
+
+<style>
+    .page-content {
+        padding: var(--space-6);
+        max-width: 1600px;
+        margin: 0 auto;
+    }
+    
+    .page-header {
+        margin-bottom: var(--space-6);
+    }
+    
+    .page-header h1 {
+        font-size: var(--text-2xl);
+        margin-bottom: var(--space-2);
+    }
+    
+    .page-header p {
+        color: var(--muted-foreground);
+        font-size: var(--text-sm);
+    }
+    
+    .page-header p strong {
+        color: var(--foreground);
+    }
+    
+    /* Table styles */
+    #vaccineDistributionByZipcodeTable {
+        width: 100% !important;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-xl);
+        overflow: hidden;
+    }
+    
+    #vaccineDistributionByZipcodeTable thead th {
+        background: var(--muted) !important;
+        color: var(--foreground) !important;
+        font-weight: 600;
+        font-size: var(--text-sm);
+        padding: var(--space-3) var(--space-4) !important;
+    }
+    
+    #vaccineDistributionByZipcodeTable tbody td {
+        padding: var(--space-3) var(--space-4) !important;
+        font-size: var(--text-sm);
+    }
+    
+    /* Footer */
+    .page-footer {
+        margin-top: var(--space-6);
+        padding: var(--space-4);
+        background: var(--muted);
+        border-radius: var(--radius-lg);
+    }
+    
+    .page-footer dl {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--space-4);
+        font-size: var(--text-sm);
+    }
+    
+    .page-footer dt {
+        font-weight: 600;
+    }
+    
+    .page-footer dd {
+        color: var(--muted-foreground);
+    }
+    
+    .page-footer dd a {
+        color: var(--primary);
+    }
+    
+    /* Nav tabs */
+    .nav-tabs {
+        display: flex;
+        gap: var(--space-1);
+        margin-bottom: var(--space-6);
+        padding: var(--space-1);
+        background: var(--muted);
+        border-radius: var(--radius-lg);
+        width: fit-content;
+    }
+    
+    .nav-tabs .nav-tab {
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+        padding: var(--space-2) var(--space-4);
+        font-size: var(--text-sm);
+        font-weight: 500;
+        color: var(--muted-foreground);
+        text-decoration: none;
+        border-radius: var(--radius-md);
+        transition: all var(--transition-fast);
+    }
+    
+    .nav-tabs .nav-tab:hover {
+        color: var(--foreground);
+    }
+    
+    .nav-tabs .nav-tab.active {
+        background: var(--background);
+        color: var(--foreground);
+        box-shadow: var(--shadow-sm);
+    }
+    
+    @media (max-width: 768px) {
+        .page-content {
+            padding: var(--space-4);
+        }
+        
+        .nav-tabs {
+            width: 100%;
+            overflow-x: auto;
+        }
+    }
+</style>
 </head>
 <body>
-<span id="forkongithub"><a href="https://github.com/KnollFrank/HowBadIsMyBatch">Fork me on GitHub</a></span>
-<h1>Pfizer Vaccine Distribution by ZIP Code</h1>
-<p>
-        By Craig Paardekooper
-    </p>
-<table class="display" id="vaccineDistributionByZipcodeTable">
-<thead>
-<tr>
-<th>Provider</th>
-<th>ZIP Code</th>
-<th>Lot Number</th>
-<th>Doses Shipped</th>
-<th>Statistical Number of Adverse Reaction Reports</th>
-<th>Statistical Number of Adverse Reaction Reports (per 100,000)</th>
-</tr>
-</thead>
-</table>
-<dl>
-<dt>Data Sources:</dt>
-<dd><a href="https://vaers.hhs.gov/data/datasets.html" target="_blank">Vaccine Adverse Event Reporting System
-                (VAERS)</a></dd>
-<dd><a href="https://icandecide.org/wp-content/uploads/2022/09/Amended-22-01962-Pfizer-2022-0426-pulled-2022-0823.xlsx" target="_blank">Vaccine Distribution by Zipcode</a></dd>
-<dt>Last updated:</dt>
-<dd id="last_updated">February 06, 2026</dd>
-</dl>
+<!-- Navigation -->
+<nav class="navbar">
+    <a href="index.html" class="navbar-brand">
+        <span class="navbar-logo">S2Y</span>
+        <span class="sm-hidden">S2Y Batches</span>
+    </a>
+    
+    <button class="navbar-toggle" aria-label="Toggle menu">
+        <i data-lucide="menu"></i>
+    </button>
+    
+    <div class="navbar-menu">
+        <a href="batchCodes.html" class="navbar-item" data-page="batchcodes">
+            <i data-lucide="table-2"></i>
+            <span>Batch Codes</span>
+        </a>
+        <a href="ZipcodeRiskMap.html" class="navbar-item" data-page="map">
+            <i data-lucide="map-pin"></i>
+            <span>Risk Map</span>
+        </a>
+        <a href="HowBadIsMyBatch.html" class="navbar-item" data-page="fulldata">
+            <i data-lucide="bar-chart-3"></i>
+            <span>Full Data</span>
+        </a>
+    </div>
+    
+    <div class="navbar-actions">
+        <a href="https://github.com/javenisme/s2y-batches" class="navbar-github" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
+            <i data-lucide="github"></i>
+        </a>
+    </div>
+</nav>
+
+<main class="page-content">
+    <div class="page-header">
+        <nav class="nav-tabs">
+            <a href="batchCodes.html" class="nav-tab">
+                <i data-lucide="table-2" style="width: 16px; height: 16px;"></i>
+                Batch Codes
+            </a>
+            <a href="ZipcodeRiskMap.html" class="nav-tab">
+                <i data-lucide="map" style="width: 16px; height: 16px;"></i>
+                Zipcode Risk Map
+            </a>
+            <a href="HowBadIsMyBatch.html" class="nav-tab active">
+                <i data-lucide="bar-chart-3" style="width: 16px; height: 16px;"></i>
+                Full Data Table
+            </a>
+        </nav>
+        
+        <h1>Vaccine Distribution by ZIP Code</h1>
+        <p>
+            Data Source: <strong>VAERS + Pfizer Distribution</strong> | 
+            Last updated: <strong id="last_updated">February 06, 2026</strong>
+        </p>
+    </div>
+    
+    <table class="display" id="vaccineDistributionByZipcodeTable">
+    <thead>
+    <tr>
+    <th>Provider</th>
+    <th>ZIP Code</th>
+    <th>Lot Number</th>
+    <th>Doses Shipped</th>
+    <th>Statistical Number of Adverse Reaction Reports</th>
+    <th>Statistical Number of Adverse Reaction Reports (per 100,000)</th>
+    </tr>
+    </thead>
+    </table>
+    
+    <footer class="page-footer">
+        <dl>
+            <dt>Data Sources:</dt>
+            <dd><a href="https://vaers.hhs.gov/data/datasets.html" target="_blank">VAERS</a></dd>
+            <dd><a href="https://icandecide.org/wp-content/uploads/2022/09/Amended-22-01962-Pfizer-2022-0426-pulled-2022-0823.xlsx" target="_blank">Pfizer Distribution</a></dd>
+        </dl>
+        <span id="forkongithub"><a href="https://github.com/KnollFrank/HowBadIsMyBatch">Fork me on GitHub</a></span>
+    </footer>
+</main>
+
+<script>
+    $(document).ready(function () {
+        lucide.createIcons();
+        
+        const tableInitializer =
+            new VaccineDistributionByZipcodeTableInitializer(
+                {
+                    tableElement: $('#vaccineDistributionByZipcodeTable')
+                });
+        tableInitializer.initialize();
+    });
+</script>
 </body>
 </html>
