@@ -15,7 +15,24 @@ class Select2 {
                 const text = event.params.data.text;
                 onSelectOptionHavingValueAndText(id, text);
             });
-        Select2.#selectOptionHavingText(selectElement, textOfOption2Select);
+        // Try to select by value (batch code), fall back to text
+        if (textOfOption2Select) {
+            const optionByValue = Select2.#getOptionHavingValue(selectElement, textOfOption2Select);
+            if (optionByValue) {
+                Select2.#selectOption(selectElement, optionByValue);
+            } else {
+                Select2.#selectOptionHavingText(selectElement, textOfOption2Select);
+            }
+        }
+    }
+
+    static #getOptionHavingValue(selectElement, value) {
+        if (value === null) {
+            return undefined;
+        }
+        return Array
+            .from(selectElement[0].options)
+            .find(option => option.value == value);
     }
 
     static #selectOptionHavingText(selectElement, text) {

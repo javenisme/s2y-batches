@@ -13,6 +13,7 @@
                 <h4>Data</h4>
                 <ul>
                     <li><a href="batchCodes.html">Batch Codes</a></li>
+                    <li><a href="symptoms.html">Symptoms</a></li>
                     <li><a href="ZipcodeRiskMap.html">Risk Map</a></li>
                     <li><a href="HowBadIsMyBatch.html">Full Data</a></li>
                 </ul>

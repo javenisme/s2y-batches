@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Symptom Search - S2Y Batches</title>
+  <meta name="description" content="Search vaccine adverse reactions by symptom. Find related batches and severity.">
+  
+  <!-- Favicon -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%236366f1' rx='15' width='100' height='100'/><text x='50%25' y='58%25' dominant-baseline='middle' text-anchor='middle' fill='white' font-size='50' font-weight='bold'>S2Y</text></svg>">
+  
+  <!-- Design System -->
+  <link rel="stylesheet" href="styles/variables.css">
+  <link rel="stylesheet" href="styles/components.css">
+  <link rel="stylesheet" href="styles/navbar.css">
+  <link rel="stylesheet" href="styles/main.css">
+  
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  
+  <style>
+    .page-content {
+      padding: var(--space-6);
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    .page-header {
+      text-align: center;
+      padding: var(--space-12) 0 var(--space-8);
+      background: linear-gradient(135deg, oklch(0.55 0.2 265 / 0.05) 0%, transparent 100%);
+    }
+    
+    .page-title {
+      font-size: var(--text-4xl);
+      font-weight: 700;
+      margin-bottom: var(--space-4);
+    }
+    
+    .page-subtitle {
+      font-size: var(--text-lg);
+      color: var(--muted-foreground);
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    
+    /* Search Box */
+    .search-container {
+      max-width: 700px;
+      margin: 0 auto var(--space-8);
+    }
+    
+    .search-input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    
+    .search-input-wrapper .search-icon {
+      position: absolute;
+      left: var(--space-4);
+      z-index: 1;
+      color: var(--muted-foreground);
+      pointer-events: none;
+    }
+    
+    .search-input-wrapper .search-icon svg {
+      width: 20px;
+      height: 20px;
+    }
+    
+    .search-input {
+      width: 100%;
+      padding: var(--space-4) var(--space-6);
+      padding-left: var(--space-12);
+      font-size: var(--text-lg);
+      border: 2px solid var(--border);
+      border-radius: var(--radius-xl);
+      background: var(--background);
+      transition: all var(--transition-fast);
+    }
+    
+    .search-input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px oklch(0.55 0.2 265 / 0.15);
+    }
+    
+    .search-hint {
+      font-size: var(--text-sm);
+      color: var(--muted-foreground);
+      margin-top: var(--space-3);
+    }
+    
+    /* Results */
+    .results-container {
+      margin-top: var(--space-8);
+    }
+    
+    .results-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--space-4);
+    }
+    
+    .results-count {
+      font-size: var(--text-sm);
+      color: var(--muted-foreground);
+    }
+    
+    /* Symptom Card */
+    .symptom-card {
+      background: var(--background);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      padding: var(--space-5);
+      margin-bottom: var(--space-4);
+      transition: all var(--transition-fast);
+    }
+    
+    .symptom-card:hover {
+      border-color: var(--primary);
+      box-shadow: var(--shadow-md);
+    }
+    
+    .symptom-name {
+      font-size: var(--text-lg);
+      font-weight: 600;
+      margin-bottom: var(--space-3);
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+    }
+    
+    .symptom-stats {
+      display: flex;
+      gap: var(--space-6);
+      flex-wrap: wrap;
+    }
+    
+    .stat-item {
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .stat-value {
+      font-size: var(--text-xl);
+      font-weight: 700;
+      color: var(--primary);
+    }
+    
+    .stat-label {
+      font-size: var(--text-xs);
+      color: var(--muted-foreground);
+    }
+    
+    .related-batches {
+      margin-top: var(--space-4);
+      padding-top: var(--space-4);
+      border-top: 1px solid var(--border);
+    }
+    
+    .related-batches-title {
+      font-size: var(--text-sm);
+      font-weight: 600;
+      margin-bottom: var(--space-2);
+    }
+    
+    .batch-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+    }
+    
+    .batch-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-1);
+      padding: var(--space-1) var(--space-3);
+      background: var(--muted);
+      border-radius: var(--radius-full);
+      font-size: var(--text-sm);
+      color: var(--foreground);
+      text-decoration: none;
+      transition: all var(--transition-fast);
+    }
+    
+    .batch-tag:hover {
+      background: var(--primary);
+      color: var(--primary-foreground);
+    }
+    
+    /* Loading */
+    .loading {
+      text-align: center;
+      padding: var(--space-12);
+      color: var(--muted-foreground);
+    }
+    
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid var(--border);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto var(--space-4);
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    /* Popular Symptoms */
+    .popular-symptoms {
+      margin-top: var(--space-8);
+    }
+    
+    .popular-title {
+      font-size: var(--text-lg);
+      font-weight: 600;
+      margin-bottom: var(--space-4);
+      text-align: center;
+    }
+    
+    .symptom-chips {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: var(--space-2);
+    }
+    
+    .symptom-chip {
+      padding: var(--space-2) var(--space-4);
+      background: var(--muted);
+      border-radius: var(--radius-full);
+      font-size: var(--text-sm);
+      color: var(--foreground);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      border: 1px solid transparent;
+    }
+    
+    .symptom-chip:hover {
+      background: oklch(0.55 0.2 265 / 0.1);
+      border-color: var(--primary);
+    }
+    
+    /* No Results */
+    .no-results {
+      text-align: center;
+      padding: var(--space-12);
+      color: var(--muted-foreground);
+    }
+    
+    .no-results svg {
+      margin-bottom: var(--space-4);
+      opacity: 0.5;
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar">
+    <a href="index.html" class="navbar-brand">
+      <span class="navbar-logo">S2Y</span>
+      <span class="sm-hidden">S2Y Batches</span>
+    </a>
+    
+    <button class="navbar-toggle" aria-label="Toggle menu">
+      <i data-lucide="menu"></i>
+    </button>
+    
+    <div class="navbar-menu">
+      <a href="batchCodes.html" class="navbar-item" data-page="batchcodes">
+        <i data-lucide="table-2"></i>
+        <span>Batch Codes</span>
+      </a>
+      <a href="symptoms.html" class="navbar-item active" data-page="symptoms">
+        <i data-lucide="search"></i>
+        <span>Symptoms</span>
+      </a>
+      <a href="ZipcodeRiskMap.html" class="navbar-item" data-page="map">
+        <i data-lucide="map-pin"></i>
+        <span>Risk Map</span>
+      </a>
+      <a href="HowBadIsMyBatch.html" class="navbar-item" data-page="fulldata">
+        <i data-lucide="bar-chart-3"></i>
+        <span>Full Data</span>
+      </a>
+    </div>
+    
+    <div class="navbar-actions">
+      <a href="https://github.com/javenisme/s2y-batches" class="navbar-github" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
+        <i data-lucide="github"></i>
+      </a>
+    </div>
+  </nav>
+
+  <main class="page-content">
+    <div class="page-header">
+      <h1 class="page-title">Symptom Search</h1>
+      <p class="page-subtitle">
+        Search vaccine adverse reactions by symptom. Find related batches and compare severity across manufacturers.
+      </p>
+    </div>
+    
+    <!-- Search Box -->
+    <div class="search-container">
+      <div class="search-input-wrapper">
+        <i data-lucide="search" class="search-icon"></i>
+        <input 
+          type="text" 
+          class="search-input" 
+          id="symptomSearch"
+          placeholder="Enter symptom (e.g., Myocarditis, Chest pain, Fatigue)"
+          autocomplete="off"
+        >
+      </div>
+      <p class="search-hint">Try: Myocarditis, Headache, Fatigue, Chest pain, Nausea, Dizziness</p>
+    </div>
+    
+    <!-- Popular Symptoms -->
+    <div class="popular-symptoms" id="popularSymptoms">
+      <h3 class="popular-title">Popular Symptoms</h3>
+      <div class="symptom-chips" id="symptomChips">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+    
+    <!-- Results -->
+    <div class="results-container" id="resultsContainer">
+      <!-- Results will be rendered here -->
+    </div>
+  </main>
+
+  <script src="Footer.js"></script>
+  
+  <script>
+    // Initialize Lucide icons
+    lucide.createIcons();
+    
+    // Symptom search functionality
+    let symptomIndex = new Map();
+    let allBatches = [];
+    
+    // Popular symptoms to show initially (top 111)
+    const popularSymptoms = [
+      'Headache', 'Fatigue', 'Pyrexia', 'Dizziness', 'SARS-CoV-2 test',
+      'Pain', 'Chills', 'COVID-19', 'Nausea', 'Pain in extremity',
+      'Myalgia', 'Dyspnoea', 'Arthralgia', 'Asthenia', 'SARS-CoV-2 test positive',
+      'Malaise', 'Rash', 'Vomiting', 'Pruritus', 'Expired product administered',
+      'Injection site pain', 'Body temperature', 'Chest pain', 'Paraesthesia', 'Cough',
+      'Product storage error', 'Vaccination failure', 'Lymphadenopathy', 'Syncope', 'Diarrhoea',
+      'No adverse event', 'Hypoaesthesia', 'Hyperhidrosis', 'Vaccination site pain', 'Blood test',
+      'Feeling abnormal', 'Erythema', 'Electrocardiogram', 'Palpitations', 'Urticaria',
+      'Blood pressure measurement', 'Injection site erythema', 'Interchange of vaccine products', 'Inappropriate schedule of product administration',
+      'Chest discomfort', 'Loss of consciousness', 'Drug ineffective', 'Injection site swelling',
+      'Condition aggravated', 'Peripheral swelling', 'Oropharyngeal pain', 'Tachycardia', 'Tinnitus',
+      'Tremor', 'Heart rate', 'Back pain', 'Heart rate increased', 'Immunisation',
+      'Feeling hot', 'Decreased appetite', 'Product administered to patient of inappropriate age', 'Computerised tomogram',
+      'Injection site pruritus', 'Swelling', 'Off label use', 'Hypertension', 'Neck pain',
+      'Magnetic resonance imaging', 'Influenza like illness', 'Blood pressure increased', 'Death',
+      'Echocardiogram', 'Injection site warmth', 'Fall', 'Vertigo', 'Migraine',
+      'Abdominal pain', 'Investigation', 'Oxygen saturation', 'Incorrect dose administered',
+      'Mobility decreased', 'Gait disturbance', 'Muscular weakness', 'Insomnia', 'Anxiety',
+      'Poor quality product administered', 'Rhinorrhoea', 'Flushing', 'Chest X-ray', 'Vision blurred',
+      'Muscle spasms', 'Product temperature excursion issue', 'Extra dose administered',
+      'Laboratory test', 'Arrhythmia', 'Pallor', 'Somnolence', 'Sleep disorder',
+      'Abdominal pain upper', 'Myocarditis', 'Rash erythematous', 'Rash pruritic', 'Seizure',
+      'SARS-CoV-2 test negative', 'Herpes zoster', 'Vaccination site erythema',
+      'C-reactive protein', 'Hypotension', 'Confusional state', 'Burning sensation',
+      'Musculoskeletal stiffness', 'Skin warm', 'Vaccination site swelling', 'Swelling face',
+      'Limb discomfort', 'Ultrasound scan', 'Feeling cold', 'Unevaluable event',
+      'Impaired work ability', 'Axillary pain', 'Pericarditis'
+    ];
+    
+    // Initialize
+    document.addEventListener('DOMContentLoaded', async () => {
+      await loadSymptomData();
+      setupSearch();
+      renderPopularSymptoms();
+      
+      // Check for search parameter in URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const searchQuery = urlParams.get('search');
+      console.log('URL search param:', searchQuery);
+      console.log('Symptom index size:', symptomIndex.size);
+      
+      if (searchQuery) {
+        document.getElementById('symptomSearch').value = searchQuery;
+        // Hide popular section
+        document.getElementById('popularSymptoms').style.display = 'none';
+        setTimeout(() => searchSymptoms(searchQuery), 100);
+      }
+    });
+    
+    async function loadSymptomData() {
+      const container = document.getElementById('resultsContainer');
+      container.innerHTML = '<div class="loading"><div class="spinner"></div>Loading symptom data...</div>';
+      
+      try {
+        // Load pre-built symptom index
+        const response = await fetch('data/histograms/Global/symptom_index.json');
+        const data = await response.json();
+        
+        // Convert to Map for easier searching
+        for (const [symptom, symptomData] of Object.entries(data)) {
+          symptomIndex.set(symptom, symptomData);
+        }
+        
+        container.innerHTML = '';
+        console.log(`Loaded ${symptomIndex.size} symptoms from index`);
+        
+      } catch (error) {
+        container.innerHTML = `<div class="no-results"><p>Error loading data: ${error.message}</p></div>`;
+      }
+    }
+    
+    function setupSearch() {
+      const searchInput = document.getElementById('symptomSearch');
+      let debounceTimer;
+      
+      searchInput.addEventListener('input', (e) => {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => {
+          const query = e.target.value.trim();
+          if (query.length >= 2) {
+            searchSymptoms(query);
+          } else if (query.length === 0) {
+            document.getElementById('resultsContainer').innerHTML = '';
+            document.getElementById('popularSymptoms').style.display = 'block';
+          }
+        }, 300);
+      });
+    }
+    
+    function searchSymptoms(query) {
+      console.log('Searching for:', query, 'Index size:', symptomIndex.size);
+      const container = document.getElementById('resultsContainer');
+      const popularSection = document.getElementById('popularSymptoms');
+      popularSection.style.display = 'none';
+      
+      if (symptomIndex.size === 0) {
+        container.innerHTML = '<div class="loading"><div class="spinner"></div>Loading data...</div>';
+        return;
+      }
+      
+      const queryLower = query.toLowerCase();
+      const results = [];
+      
+      // Find matching symptoms
+      for (const [symptom, data] of symptomIndex) {
+        if (symptom.toLowerCase().includes(queryLower)) {
+          results.push({ symptom, ...data });
+        }
+      }
+      
+      // Sort by total count
+      results.sort((a, b) => b.total - a.total);
+      
+      // Limit results
+      const limitedResults = results.slice(0, 10);
+      
+      if (limitedResults.length === 0) {
+        container.innerHTML = `
+          <div class="no-results">
+            <i data-lucide="search-x" style="width: 48px; height: 48px;"></i>
+            <p>No symptoms found matching "${query}"</p>
+          </div>
+        `;
+        lucide.createIcons();
+        return;
+      }
+      
+      // Render results
+      container.innerHTML = `
+        <div class="results-header">
+          <span class="results-count">${results.length} symptoms found</span>
+        </div>
+        ${limitedResults.map(r => renderSymptomCard(r)).join('')}
+      `;
+      
+      lucide.createIcons();
+    }
+    
+    function renderSymptomCard(data) {
+      const { symptom, total, batches } = data;
+      
+      // Convert batches object to entries for sorting
+      const batchEntries = Object.entries(batches);
+      
+      // Get top batches
+      const topBatches = batchEntries
+        .sort((a, b) => b[1].count - a[1].count)
+        .slice(0, 5);
+      
+      // Calculate stats
+      let totalDeaths = 0;
+      let totalReports = 0;
+      for (const [, batchData] of batchEntries) {
+        totalDeaths += batchData.deaths || 0;
+        totalReports += batchData.reports || 0;
+      }
+      
+      const severity = totalReports > 0 ? ((totalDeaths / totalReports) * 100).toFixed(2) : 0;
+      
+      return `
+        <div class="symptom-card">
+          <div class="symptom-name">
+            <i data-lucide="activity"></i>
+            ${symptom}
+          </div>
+          <div class="symptom-stats">
+            <div class="stat-item">
+              <span class="stat-value">${total.toLocaleString()}</span>
+              <span class="stat-label">Total Reports</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-value">${batchEntries.length}</span>
+              <span class="stat-label">Affected Batches</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-value">${severity}%</span>
+              <span class="stat-label">Lethality Rate</span>
+            </div>
+          </div>
+          <div class="related-batches">
+            <div class="related-batches-title">Top Affected Batches</div>
+            <div class="batch-tags">
+              ${topBatches.map(([code, bd]) => `
+                <a href="HowBadIsMyBatch?batchCode=${code}" class="batch-tag">
+                  ${code} (${bd.count})
+                </a>
+              `).join('')}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+    
+    function renderPopularSymptoms() {
+      const container = document.getElementById('symptomChips');
+      
+      // Filter to only show symptoms that exist in our index
+      const availablePopular = popularSymptoms.filter(s => symptomIndex.has(s));
+      
+      container.innerHTML = availablePopular.map(symptom => `
+        <button class="symptom-chip" onclick="searchFor('${symptom}')">
+          ${symptom}
+        </button>
+      `).join('');
+    }
+    
+    // Global function for onclick
+    window.searchFor = function(symptom) {
+      document.getElementById('symptomSearch').value = symptom;
+      searchSymptoms(symptom);
+    };
+  </script>
+</body>
+</html>

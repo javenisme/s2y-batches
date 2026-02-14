@@ -26,6 +26,50 @@
     gtag('js', new Date());
     gtag('config', 'G-ERHYDH4P64');
   </script>
+  
+  <style>
+    .symptoms-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: var(--space-3);
+    }
+    
+    .symptom-chip {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: var(--space-3) var(--space-4);
+      background: var(--background);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      font-size: var(--text-sm);
+      font-weight: 500;
+      color: var(--foreground);
+      text-decoration: none;
+      text-align: center;
+      transition: all var(--transition-fast);
+      min-height: 48px;
+    }
+    
+    .symptom-chip:hover {
+      border-color: var(--primary);
+      background: oklch(0.55 0.2 265 / 0.08);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+    
+    .symptom-chip.severity-high {
+      border-left: 3px solid var(--danger);
+    }
+    
+    .symptom-chip.severity-medium {
+      border-left: 3px solid var(--warning);
+    }
+    
+    .symptom-chip.severity-low {
+      border-left: 3px solid var(--success);
+    }
+  </style>
 </head>
 <body>
   <!-- Navigation -->
@@ -43,6 +87,10 @@
       <a href="batchCodes.html" class="navbar-item" data-page="batchcodes">
         <i data-lucide="table-2"></i>
         <span>Batch Codes</span>
+      </a>
+      <a href="symptoms.html" class="navbar-item" data-page="symptoms">
+        <i data-lucide="search"></i>
+        <span>Symptoms</span>
       </a>
       <a href="ZipcodeRiskMap.html" class="navbar-item" data-page="map">
         <i data-lucide="map-pin"></i>
@@ -97,6 +145,23 @@
           <div class="stat-label">Reported Deaths</div>
         </div>
       </div>
+    </div>
+  </section>
+
+  <!-- Common Symptoms Section -->
+  <section class="container" style="padding: var(--space-12) 0;">
+    <h2 style="text-align: center; margin-bottom: var(--space-4);">Common Symptoms</h2>
+    <p style="text-align: center; color: var(--muted-foreground); margin-bottom: var(--space-8);">
+      Click a symptom to search related vaccine batches
+    </p>
+    <div class="symptoms-grid" id="symptomsGrid">
+      <!-- Populated by JS -->
+    </div>
+    <div style="text-align: center; margin-top: var(--space-6);">
+      <a href="symptoms.html" class="btn btn-secondary" style="display: inline-flex; align-items: center; gap: var(--space-2);">
+        <i data-lucide="search"></i>
+        View All Symptoms
+      </a>
     </div>
   </section>
 
@@ -194,6 +259,35 @@
     
     // Load stats on page load
     loadStats();
+    
+    // Load top symptoms (12 items)
+    async function loadTopSymptoms() {
+      try {
+        const response = await fetch('data/histograms/Global/symptom_index.json');
+        const data = await response.json();
+        
+        // Convert to array and sort by total
+        const symptoms = Object.entries(data)
+          .map(([name, info]) => ({ name, ...info }))
+          .sort((a, b) => b.total - a.total)
+          .slice(0, 12);
+        
+        const grid = document.getElementById('symptomsGrid');
+        
+        grid.innerHTML = symptoms.map(s => {
+          let severityClass = 'severity-low';
+          if (s.total > 10000) severityClass = 'severity-high';
+          else if (s.total > 1000) severityClass = 'severity-medium';
+          
+          return `<a href="symptoms.html?search=${encodeURIComponent(s.name)}" class="symptom-chip ${severityClass}">${s.name}</a>`;
+        }).join('');
+        
+      } catch (e) {
+        console.error('Failed to load symptoms:', e);
+      }
+    }
+    
+    loadTopSymptoms();
   </script>
 </body>
 </html>
