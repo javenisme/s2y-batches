@@ -40,6 +40,7 @@
             <div class="footer-section">
                 <h4>About</h4>
                 <ul>
+                    <li><a href="data-explanation.html">数据说明</a></li>
                     <li><a href="mailto:info-batches@s2y.org">Contact</a></li>
                 </ul>
             </div>
