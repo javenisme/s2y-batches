@@ -100,3 +100,53 @@ export interface BatchRiskStats {
   top_symptoms: TopSymptom[];
   geographic_distribution: Record<string, number>;
 }
+
+// Enhanced Types for User Story 2 & 3
+
+export interface SymptomDetail {
+  symptom: string;
+  frequency: number;
+  percentage: number;
+  severity: 'severe' | 'common' | 'mild';
+  avg_onset_days: number | null;
+  median_duration_days: number | null;
+  hospitalization_rate: number | null;
+  mortality_rate: number | null;
+}
+
+export interface SymptomsResponse {
+  batch_code: string;
+  total_symptoms: number;
+  symptoms: SymptomDetail[];
+  date_range: {
+    start: string;
+    end: string;
+  };
+}
+
+export interface RiskExplanation {
+  batch_code: string;
+  risk_score: number;
+  risk_level: string;
+  summary: string;
+  interpretation: string;
+  recommendations: string[];
+  calculation_method: string;
+  comparison_benchmark: {
+    national_avg: number;
+    percentile_rank: number;
+    comparison_text: string;
+  };
+}
+
+export interface SymptomFilter {
+  severity?: 'all' | 'severe' | 'common' | 'mild';
+  dose_number?: number;
+  date_range?: '7d' | '30d' | '90d' | 'all';
+}
+
+export interface SymptomTimeDistribution {
+  range: string;
+  common_count: number;
+  severe_count: number;
+}
