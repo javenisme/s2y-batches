@@ -1,188 +1,286 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>数据说明 - S2Y Batches</title>
-    <link rel="stylesheet" href="gentelella/vendors/bootstrap/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" href="gentelella/vendors/font-awesome/css/font-awesome.min.css">
-    <link rel="stylesheet" href="styles/theme.css">
+    <title>Data Explanation - S2Y Batches</title>
+    <meta name="description" content="Understand how S2Y Batches calculates risk scores and interprets VAERS data.">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    
+    <!-- Design System -->
+    <link rel="stylesheet" href="styles/variables.css">
+    <link rel="stylesheet" href="styles/components.css">
+    <link rel="stylesheet" href="styles/navbar.css">
+    <link rel="stylesheet" href="styles/main.css">
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-ERHYDH4P64"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-ERHYDH4P64');
+    </script>
+    
     <style>
-        body {
-            background: var(--background);
-            padding-top: 60px;
-        }
         .doc-container {
-            max-width: 900px;
-            margin: 40px auto;
-            padding: 30px;
-            background: var(--card-background);
-            border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            max-width: 800px;
+            margin: 0 auto;
+            padding: var(--space-12) var(--space-4);
         }
+        
         .doc-section {
-            margin-bottom: 40px;
-            padding-bottom: 30px;
-            border-bottom: 1px solid var(--border-color);
+            margin-bottom: var(--space-10);
+            padding-bottom: var(--space-8);
+            border-bottom: 1px solid var(--border);
         }
+        
         .doc-section:last-child {
             border-bottom: none;
         }
+        
         h1 {
-            color: var(--primary);
-            margin-bottom: 30px;
+            color: var(--foreground);
+            margin-bottom: var(--space-8);
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
         }
+        
         h2 {
-            color: var(--text-primary);
-            margin-top: 30px;
-            margin-bottom: 15px;
+            color: var(--foreground);
+            margin-top: var(--space-8);
+            margin-bottom: var(--space-4);
         }
+        
         h3 {
-            color: var(--text-secondary);
-            margin-top: 20px;
+            color: var(--muted-foreground);
+            margin-top: var(--space-6);
+            margin-bottom: var(--space-3);
         }
+        
+        p {
+            color: var(--muted-foreground);
+            line-height: 1.7;
+        }
+        
         .risk-badge {
             display: inline-block;
             padding: 4px 12px;
             border-radius: 20px;
             font-size: 14px;
-            font-weight: bold;
+            font-weight: 600;
         }
-        .risk-low { background: #d4edda; color: #155724; }
-        .risk-medium { background: #fff3cd; color: #856404; }
-        .risk-high { background: #f8d7da; color: #721c24; }
+        
+        .risk-low { 
+            background: oklch(0.6 0.18 150 / 0.2); 
+            color: var(--success);
+        }
+        
+        .risk-medium { 
+            background: oklch(0.6 0.18 85 / 0.2); 
+            color: var(--warning);
+        }
+        
+        .risk-high { 
+            background: oklch(0.6 0.18 25 / 0.2); 
+            color: var(--danger);
+        }
+        
         .info-box {
-            background: var(--muted-background);
-            padding: 15px 20px;
-            border-radius: 8px;
-            margin: 15px 0;
+            background: var(--background);
+            padding: var(--space-4) var(--space-5);
+            border-radius: var(--radius-lg);
+            margin: var(--space-4) 0;
             border-left: 4px solid var(--primary);
         }
+        
         .warning-box {
-            background: #fff3cd;
-            padding: 15px 20px;
-            border-radius: 8px;
-            margin: 15px 0;
-            border-left: 4px solid #ffc107;
+            background: oklch(0.6 0.18 85 / 0.1);
+            padding: var(--space-4) var(--space-5);
+            border-radius: var(--radius-lg);
+            margin: var(--space-4) 0;
+            border-left: 4px solid var(--warning);
         }
-        .danger-box {
-            background: #f8d7da;
-            padding: 15px 20px;
-            border-radius: 8px;
-            margin: 15px 0;
-            border-left: 4px solid #dc3545;
-        }
+        
         code {
-            background: var(--muted-background);
+            background: var(--background);
             padding: 2px 6px;
-            border-radius: 4px;
-            font-family: monospace;
+            border-radius: var(--radius-sm);
+            font-family: var(--font-mono);
+            font-size: 14px;
         }
-        .nav-breadcrumb {
-            margin-bottom: 20px;
+        
+        ul {
+            color: var(--muted-foreground);
+            line-height: 1.8;
         }
-        .nav-breadcrumb a {
+        
+        li {
+            margin-bottom: var(--space-2);
+        }
+        
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            margin-bottom: var(--space-6);
+            font-size: 14px;
+        }
+        
+        .breadcrumb a {
             color: var(--primary);
             text-decoration: none;
         }
-        .nav-breadcrumb a:hover {
+        
+        .breadcrumb a:hover {
             text-decoration: underline;
+        }
+        
+        .breadcrumb-separator {
+            color: var(--muted-foreground);
         }
     </style>
 </head>
 <body>
-    <script src="Navbar.js"></script>
-    
+    <!-- Navigation -->
+    <nav class="navbar">
+        <a href="index.html" class="navbar-brand">
+            <span class="navbar-logo">S2Y</span>
+            <span class="sm-hidden">S2Y Batches</span>
+        </a>
+        
+        <button class="navbar-toggle" aria-label="Toggle menu">
+            <i data-lucide="menu"></i>
+        </button>
+        
+        <div class="navbar-menu">
+            <a href="batchCodes.html" class="navbar-item" data-page="batchcodes">
+                <i data-lucide="table-2"></i>
+                <span>Batch Codes</span>
+            </a>
+            <a href="symptoms.html" class="navbar-item" data-page="symptoms">
+                <i data-lucide="search"></i>
+                <span>Symptoms</span>
+            </a>
+            <a href="ZipcodeRiskMap.html" class="navbar-item" data-page="map">
+                <i data-lucide="map-pin"></i>
+                <span>Risk Map</span>
+            </a>
+            <a href="HowBadIsMyBatch.html" class="navbar-item" data-page="fulldata">
+                <i data-lucide="bar-chart-3"></i>
+                <span>Full Data</span>
+            </a>
+        </div>
+        
+        <div class="navbar-actions">
+            <a href="https://github.com/javenisme/s2y-batches" class="navbar-github" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
+                <i data-lucide="github"></i>
+            </a>
+        </div>
+    </nav>
+
     <div class="doc-container">
-        <nav class="nav-breadcrumb">
-            <a href="index.html">首页</a> &gt; <span>数据说明</span>
+        <nav class="breadcrumb">
+            <a href="index.html">Home</a>
+            <span class="breadcrumb-separator">›</span>
+            <span>Data Explanation</span>
         </nav>
         
-        <h1><i class="fa fa-book"></i> 数据说明</h1>
+        <h1><i data-lucide="book-open"></i> Data Explanation</h1>
         
         <div class="doc-section">
-            <h2>关于风险分数</h2>
-            <p>我们的风险分数是基于 VAERS（疫苗不良事件报告系统）数据计算得出的综合性评估指标，范围从 0 到 10。</p>
+            <h2>About Risk Scores</h2>
+            <p>Our risk scores are comprehensive assessment metrics calculated from VAERS (Vaccine Adverse Event Reporting System) data, ranging from 0 to 10.</p>
             
-            <h3>计算方法</h3>
+            <h3>Calculation Method</h3>
             <div class="info-box">
-                <strong>基础分数 =</strong> 死亡率 × 2.0 + 严重反应率 × 0.5<br><br>
-                然后根据用户个人因素进行调整：
-                <ul>
-                    <li>65岁以上：<code>+1.5</code></li>
-                    <li>50-64岁：<code>+1.0</code></li>
-                    <li>糖尿病：<code>+0.8</code></li>
-                    <li>心脏病：<code>+0.8</code></li>
-                    <li>免疫缺陷：<code>+1.0</code></li>
-                    <li>曾感染COVID：<code>-0.3</code></li>
+                <strong>Base Score =</strong> Mortality Rate × 2.0 + Severe Reaction Rate × 0.5<br><br>
+                Then adjusted for personal factors:
+                <ul style="margin-top: var(--space-3); margin-bottom: 0;">
+                    <li>Age 65+: <code>+1.5</code></li>
+                    <li>Age 50-64: <code>+1.0</code></li>
+                    <li>Diabetes: <code>+0.8</code></li>
+                    <li>Heart Disease: <code>+0.8</code></li>
+                    <li>Immunodeficiency: <code>+1.0</code></li>
+                    <li>Previous COVID Infection: <code>-0.3</code></li>
                 </ul>
             </div>
             
-            <h3>风险等级</h3>
+            <h3>Risk Levels</h3>
             <ul>
-                <li><span class="risk-badge risk-low">低风险</span> 分数 &lt; 4.0：不良反应报告相对较少</li>
-                <li><span class="risk-badge risk-medium">中等风险</span> 分数 4.0-7.0：有一定比例的严重反应</li>
-                <li><span class="risk-badge risk-high">高风险</span> 分数 ≥ 7.0：严重反应报告比例较高</li>
+                <li><span class="risk-badge risk-low">Low Risk</span> Score &lt; 4.0: Relatively few adverse reaction reports</li>
+                <li><span class="risk-badge risk-medium">Medium Risk</span> Score 4.0-7.0: Some severe reactions reported</li>
+                <li><span class="risk-badge risk-high">High Risk</span> Score ≥ 7.0: Higher proportion of severe reaction reports</li>
             </ul>
         </div>
         
         <div class="doc-section">
-            <h2>关于症状统计</h2>
-            <p>症状数据来自接种者的不良事件报告，展示接种后不同症状的出现频率。</p>
+            <h2>About Symptom Statistics</h2>
+            <p>Symptom data comes from adverse event reports submitted by vaccinated individuals, showing the frequency of different symptoms after vaccination.</p>
             
-            <h3>严重程度分类</h3>
+            <h3>Severity Classification</h3>
             <ul>
-                <li><strong>⚠️ 严重症状</strong>：可能导致住院、残疾或死亡的症状，如呼吸困难、胸痛、血栓等</li>
-                <li><strong>🟡 常见症状</strong>：大多数接种者会经历的轻度至中度症状，如头痛、疲劳、发热等</li>
-                <li><strong>🟢 轻微症状</strong>：较少出现或症状轻微，通常无需特殊处理</li>
+                <li><strong>⚠️ Severe Symptoms</strong>: Symptoms that may lead to hospitalization, disability, or death, such as difficulty breathing, chest pain, blood clots</li>
+                <li><strong>🟡 Common Symptoms</strong>: Mild to moderate symptoms experienced by most vaccinated individuals, such as headache, fatigue, fever</li>
+                <li><strong>🟢 Mild Symptoms</strong>: Less frequent or mild symptoms that usually don't require special treatment</li>
             </ul>
             
-            <h3>时间分布</h3>
-            <p>症状出现时间分布显示接种后不同时间段内症状报告的数量，帮助了解症状出现的高峰期。</p>
+            <h3>Time Distribution</h3>
+            <p>The symptom time distribution shows the number of symptom reports in different time periods after vaccination, helping understand when symptoms typically occur.</p>
         </div>
         
         <div class="doc-section">
-            <h2>数据来源</h2>
+            <h2>Data Sources</h2>
             <div class="info-box">
-                <strong>VAERS</strong>（Vaccine Adverse Event Reporting System）<br>
-                美国疫苗不良事件报告系统，由 CDC 和 FDA 运营。<br><br>
-                <small>数据网址：<a href="https://vaers.hhs.gov/data/datasets.html" target="_blank">https://vaers.hhs.gov/data/datasets.html</a></small>
+                <strong>VAERS</strong> (Vaccine Adverse Event Reporting System)<br>
+                The US vaccine adverse event reporting system, operated by CDC and FDA.<br><br>
+                <small>Data URL: <a href="https://vaers.hhs.gov/data/datasets.html" target="_blank" style="color: var(--primary);">https://vaers.hhs.gov/data/datasets.html</a></small>
             </div>
         </div>
         
         <div class="doc-section">
-            <h2>重要说明</h2>
+            <h2>Important Disclaimer</h2>
             <div class="warning-box">
-                <h4>⚠️ 免责声明</h4>
+                <h4>⚠️ Disclaimer</h4>
                 <ul>
-                    <li>VAERS 是被动报告系统，存在漏报和报告偏差</li>
-                    <li>相关不等于因果 - 报告的事件不一定由疫苗引起</li>
-                    <li>本平台数据仅供参考，不能替代医疗建议</li>
-                    <li>如有健康疑虑，请咨询专业医疗人员</li>
+                    <li>VAERS is a passive reporting system and may have underreporting and reporting biases</li>
+                    <li>Correlation does not imply causation - reported events may not be caused by vaccines</li>
+                    <li>This platform data is for reference only and cannot replace medical advice</li>
+                    <li>Please consult a healthcare professional for any health concerns</li>
                 </ul>
             </div>
         </div>
         
         <div class="doc-section">
-            <h2>如何理解数据</h2>
+            <h2>How to Interpret the Data</h2>
             
-            <h3>报告多 ≠ 危险</h3>
-            <p>高报告量可能表示：</p>
+            <h3>More Reports ≠ More Dangerous</h3>
+            <p>High report volume may indicate:</p>
             <ul>
-                <li>该批次接种人数多</li>
-                <li>公众关注度高</li>
-                <li>医疗机构报告意识强</li>
+                <li>More people received that batch</li>
+                <li>Higher public awareness</li>
+                <li>Stronger reporting practices by healthcare providers</li>
             </ul>
             
-            <h3>建议</h3>
+            <h3>Recommendations</h3>
             <ul>
-                <li>结合风险分数和症状列表综合判断</li>
-                <li>关注严重症状的出现率，而非绝对数量</li>
-                <li>如有基础疾病，请咨询医生</li>
+                <li>Consider both risk scores and symptom lists together</li>
+                <li>Pay attention to severe symptom rates, not just absolute numbers</li>
+                <li>Consult your doctor if you have underlying health conditions</li>
             </ul>
         </div>
     </div>
     
     <script src="Footer.js"></script>
+    
+    <script>
+        lucide.createIcons();
+    </script>
 </body>
 </html>
