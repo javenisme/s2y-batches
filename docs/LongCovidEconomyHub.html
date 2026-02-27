@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Long COVID & The Global Economy: Workforce Impact Analysis | S2Y Batches</title>
+  <meta name="description" content="Explore the correlation between Long COVID symptom prevalence and its impact on the Top 10 global economies. Analyze workforce risk and potential GDP loss based on vaccine safety signals.">
+  <meta name="keywords" content="Long COVID economy, workforce impact, vaccine side effects GDP, global economic risk, COVID-19 safety signals">
+
+  <!-- SEO: Open Graph / Facebook -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://s2y-batches.com/LongCovidEconomyHub.html">
+  <meta property="og:title" content="Long COVID & The Global Economy: Workforce Impact Analysis">
+  <meta property="og:description" content="Data-driven analysis of Long COVID's impact on major world economies and their labor forces.">
+  <meta property="og:image" content="s2y_logo_text.png">
+
+  <!-- SEO: JSON-LD Schema.org -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Dataset",
+    "name": "Long COVID Economic Impact Dataset",
+    "description": "Analysis of the correlation between COVID-19 vaccine safety signals for Long COVID symptoms and national economic metrics.",
+    "creator": {
+      "@type": "Organization",
+      "name": "S2Y Batches"
+    },
+    "variableMeasured": ["Workforce Impact", "GDP Risk", "Symptom PRR"],
+    "contentLocation": "Global"
+  }
+  </script>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+
+  <!-- Design System -->
+  <link rel="stylesheet" href="styles/variables.css">
+  <link rel="stylesheet" href="styles/components.css">
+  <link rel="stylesheet" href="styles/navbar.css">
+  <link rel="stylesheet" href="styles/main.css">
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+  <style>
+    .impact-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: var(--space-6);
+      margin-bottom: var(--space-12);
+    }
+
+    .chart-container {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      padding: var(--space-6);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .data-table-wrapper {
+      overflow-x: auto;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      margin-top: var(--space-8);
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    .data-table th, .data-table td {
+      padding: var(--space-4);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .data-table th {
+      background: var(--muted);
+      font-weight: 600;
+      color: var(--muted-foreground);
+      font-size: var(--text-xs);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .risk-high { color: var(--danger); font-weight: 600; }
+    .risk-med { color: var(--warning); font-weight: 600; }
+
+    .methodology-box {
+      background: oklch(0.55 0.2 265 / 0.05);
+      border-left: 4px solid var(--primary);
+      padding: var(--space-6);
+      border-radius: var(--radius-md);
+      margin: var(--space-10) 0;
+    }
+
+    .symptom-tag {
+        display: inline-block;
+        background: var(--muted);
+        padding: 2px 8px;
+        border-radius: 4px;
+        margin: 2px;
+        font-size: 0.85em;
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar">
+    <a href="index.html" class="navbar-brand">
+      <img src="s2y_logo_light.png" alt="S2Y" class="navbar-logo-img"><span class="sm-hidden">Batches</span>
+    </a>
+
+    <button class="navbar-toggle" aria-label="Toggle menu">
+      <i data-lucide="menu"></i>
+    </button>
+
+    <div class="navbar-menu">
+      <a href="batchCodes.html" class="navbar-item">
+        <i data-lucide="table-2"></i>
+        <span>Batch Codes</span>
+      </a>
+      <a href="symptoms.html" class="navbar-item">
+        <i data-lucide="search"></i>
+        <span>Symptoms</span>
+      </a>
+      <a href="ZipcodeRiskMap.html" class="navbar-item">
+        <i data-lucide="map-pin"></i>
+        <span>Risk Map</span>
+      </a>
+      <a href="LongCovidEconomyHub.html" class="navbar-item active">
+        <i data-lucide="trending-up"></i>
+        <span>Economic Impact</span>
+      </a>
+    </div>
+  </nav>
+
+  <main class="container" style="padding-top: var(--space-12); padding-bottom: var(--space-20);">
+    <header style="text-align: center; margin-bottom: var(--space-12);">
+      <h1 class="hero-title">Long COVID & The Global Economy</h1>
+      <p class="hero-subtitle">Analyzing the Correlation Between Vaccine Safety Signals and Workforce Productivity.</p>
+    </header>
+
+    <!-- Summary Cards -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-value" id="avgSignal">-</div>
+        <div class="stat-label">Avg Long COVID Signal (PRR)</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="totalImpacted">-</div>
+        <div class="stat-label">Total Workers Affected (Est.)</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="totalGdpLoss">-</div>
+        <div class="stat-label">Total GDP at Risk (Est.)</div>
+      </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="impact-grid" style="margin-top: var(--space-12);">
+      <div class="chart-container">
+        <h3 style="margin-bottom: var(--space-4);">Workforce Impact by Economy (Millions)</h3>
+        <canvas id="workforceChart"></canvas>
+      </div>
+      <div class="chart-container">
+        <h3 style="margin-bottom: var(--space-4);">Estimated GDP Loss (Trillions USD)</h3>
+        <canvas id="gdpChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Data Table -->
+    <section>
+      <h2>National Economic Risk Reports</h2>
+      <div class="data-table-wrapper">
+        <table class="data-table" id="economyTable">
+          <thead>
+            <tr>
+              <th>Country</th>
+              <th>GDP ($T)</th>
+              <th>Workforce (M)</th>
+              <th>Impact Score</th>
+              <th>Affected Workers (M)</th>
+              <th>GDP at Risk ($T)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Populated by JS -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Methodology & SEO Content -->
+    <section class="methodology-box">
+      <h3>Methodology & Data Analysis</h3>
+      <p>
+        Our analysis utilizes the <strong>Proportional Reporting Ratio (PRR)</strong> from VAERS data to identify safety signals
+        associated with Long COVID symptoms. By correlating these signals with national labor statistics, we estimate the
+        potential scale of workforce disruption.
+      </p>
+      <p style="margin-top: var(--space-4);">
+        <strong>Symptoms Analyzed:</strong>
+        <span id="symptomList"></span>
+      </p>
+      <p style="margin-top: var(--space-4); font-size: var(--text-sm); color: var(--muted-foreground);">
+        *Disclaimer: These figures represent statistical projections based on public adverse event reports and are intended for
+        informational and SEO research purposes.
+      </p>
+    </section>
+
+    <section style="margin-top: var(--space-12);">
+        <h2>Why Long COVID Matters for Global GDP</h2>
+        <p>
+            As major economies face aging populations and labor shortages, the health of the remaining workforce is critical.
+            Symptoms like <em>Brain Fog</em>, <em>Chronic Fatigue</em>, and <em>Cognitive Disorder</em> directly impact productivity
+            and labor participation rates. Our data indicates that even a small percentage of affected workers can result in
+            billions of dollars in lost economic output.
+        </p>
+        <div style="margin-top: var(--space-6); display: flex; gap: var(--space-4);">
+            <a href="symptoms.html?search=Fatigue" class="btn btn-secondary">Explore Fatigue Data</a>
+            <a href="batchCodes.html" class="btn btn-secondary">Analyze Batch Risks</a>
+        </div>
+    </section>
+  </main>
+
+  <script src="Footer.js"></script>
+
+  <script>
+    lucide.createIcons();
+
+    async function initDashboard() {
+      try {
+        const response = await fetch('data/long-covid-economy-impact.json');
+        const data = await response.json();
+
+        // Populate Summary
+        document.getElementById('avgSignal').textContent = data.summary.avg_long_covid_signal;
+
+        const totalWorkers = data.countries.reduce((sum, c) => sum + c.estimated_affected_workers_m, 0);
+        document.getElementById('totalImpacted').textContent = totalWorkers.toFixed(1) + 'M';
+
+        const totalGdp = data.countries.reduce((sum, c) => sum + c.estimated_gdp_loss_t, 0);
+        document.getElementById('totalGdpLoss').textContent = '$' + totalGdp.toFixed(2) + 'T';
+
+        document.getElementById('symptomList').innerHTML = data.summary.symptoms_with_signals.map(s =>
+            `<span class="symptom-tag">${s}</span>`
+        ).join('');
+
+        // Populate Table
+        const tbody = document.querySelector('#economyTable tbody');
+        tbody.innerHTML = data.countries.map(c => `
+          <tr>
+            <td><strong>${c.country}</strong></td>
+            <td>${c.gdp}</td>
+            <td>${c.workforce}</td>
+            <td><span class="risk-med">${c.impact_score}</span></td>
+            <td class="risk-high">${c.estimated_affected_workers_m}</td>
+            <td>$${c.estimated_gdp_loss_t}T</td>
+          </tr>
+        `).join('');
+
+        // Charts
+        const labels = data.countries.map(c => c.country);
+        const workforceData = data.countries.map(c => c.estimated_affected_workers_m);
+        const gdpData = data.countries.map(c => c.estimated_gdp_loss_t);
+
+        new Chart(document.getElementById('workforceChart'), {
+          type: 'bar',
+          data: {
+            labels: labels,
+            datasets: [{
+              label: 'Impacted Workers (Millions)',
+              data: workforceData,
+              backgroundColor: 'oklch(0.55 0.2 265 / 0.8)',
+              borderRadius: 4
+            }]
+          },
+          options: {
+            responsive: true,
+            plugins: { legend: { display: false } }
+          }
+        });
+
+        new Chart(document.getElementById('gdpChart'), {
+          type: 'doughnut',
+          data: {
+            labels: labels,
+            datasets: [{
+              data: gdpData,
+              backgroundColor: [
+                '#ef4444', '#f97316', '#f59e0b', '#eab308', '#84cc16',
+                '#22c55e', '#10b981', '#06b6d4', '#3b82f6', '#6366f1'
+              ]
+            }]
+          },
+          options: {
+            responsive: true,
+            plugins: {
+                legend: { position: 'right' },
+                tooltip: {
+                    callbacks: {
+                        label: (ctx) => `${ctx.label}: $${ctx.raw}T`
+                    }
+                }
+            }
+          }
+        });
+
+      } catch (e) {
+        console.error('Failed to load economy data:', e);
+      }
+    }
+
+    initDashboard();
+  </script>
+</body>
+</html>

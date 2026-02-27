@@ -1,0 +1,103 @@
+{
+  "summary": {
+    "avg_long_covid_signal": 3.33,
+    "total_symptoms_analyzed": 17,
+    "symptoms_with_signals": [
+      "Ageusia",
+      "Anosmia",
+      "Arthralgia",
+      "Attention deficit hyperactivity disorder",
+      "Chest pain",
+      "Dyspnoea",
+      "Dyspnoea at rest",
+      "Dyspnoea exertional",
+      "Dyspnoea paroxysmal nocturnal",
+      "Fatigue",
+      "Myalgia",
+      "Palpitations"
+    ],
+    "methodology": "Impact calculated by correlating COVID-19 vaccine safety signals (PRR) for Long COVID associated symptoms with national workforce and GDP data."
+  },
+  "countries": [
+    {
+      "country": "China",
+      "gdp": 19.4,
+      "workforce": 774.0,
+      "impact_score": 3.33,
+      "estimated_affected_workers_m": 128.92,
+      "estimated_gdp_loss_t": 0.65
+    },
+    {
+      "country": "India",
+      "gdp": 4.1,
+      "workforce": 608.0,
+      "impact_score": 3.33,
+      "estimated_affected_workers_m": 101.27,
+      "estimated_gdp_loss_t": 0.14
+    },
+    {
+      "country": "United States",
+      "gdp": 30.6,
+      "workforce": 174.0,
+      "impact_score": 3.33,
+      "estimated_affected_workers_m": 28.98,
+      "estimated_gdp_loss_t": 1.02
+    },
+    {
+      "country": "Russia",
+      "gdp": 2.5,
+      "workforce": 72.5,
+      "impact_score": 3.33,
+      "estimated_affected_workers_m": 12.08,
+      "estimated_gdp_loss_t": 0.08
+    },
+    {
+      "country": "Japan",
+      "gdp": 4.3,
+      "workforce": 69.4,
+      "impact_score": 3.33,
+      "estimated_affected_workers_m": 11.56,
+      "estimated_gdp_loss_t": 0.14
+    },
+    {
+      "country": "Germany",
+      "gdp": 5.0,
+      "workforce": 43.8,
+      "impact_score": 3.33,
+      "estimated_affected_workers_m": 7.3,
+      "estimated_gdp_loss_t": 0.17
+    },
+    {
+      "country": "United Kingdom",
+      "gdp": 4.0,
+      "workforce": 35.4,
+      "impact_score": 3.33,
+      "estimated_affected_workers_m": 5.9,
+      "estimated_gdp_loss_t": 0.13
+    },
+    {
+      "country": "France",
+      "gdp": 3.4,
+      "workforce": 31.7,
+      "impact_score": 3.33,
+      "estimated_affected_workers_m": 5.28,
+      "estimated_gdp_loss_t": 0.11
+    },
+    {
+      "country": "Italy",
+      "gdp": 2.5,
+      "workforce": 25.8,
+      "impact_score": 3.33,
+      "estimated_affected_workers_m": 4.3,
+      "estimated_gdp_loss_t": 0.08
+    },
+    {
+      "country": "Canada",
+      "gdp": 2.2,
+      "workforce": 22.9,
+      "impact_score": 3.33,
+      "estimated_affected_workers_m": 3.81,
+      "estimated_gdp_loss_t": 0.07
+    }
+  ]
+}
