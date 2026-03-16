@@ -514,3 +514,18 @@
     justify-content: center;
   }
 }
+
+/* ===== Navbar Centering (override all @import conflicts) ===== */
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: unset;
+}
+.navbar-brand {
+  flex: 1;
+}
+.navbar-actions {
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
+}

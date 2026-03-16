@@ -8,7 +8,6 @@
   z-index: var(--z-sticky);
   display: flex;
   align-items: center;
-  justify-content: space-between;
   padding: var(--space-3) var(--space-6);
   background-color: oklch(0.985 0 0 / 0.8);
   border-bottom: 1px solid var(--border);
@@ -22,6 +21,7 @@
 }
 
 .navbar-brand {
+  flex: 1;
   display: flex;
   align-items: flex-end;
   gap: var(--space-2);
@@ -104,8 +104,10 @@
 }
 
 .navbar-actions {
+  flex: 1;
   display: flex;
   align-items: center;
+  justify-content: flex-end;
   gap: var(--space-2);
 }
 

@@ -176,12 +176,14 @@
 <script src="./HistogramTable.js"></script>
 <script src="./AdverseReactionReportsChartView.js"></script>
 <script src="./BatchCodeDetailsView.js"></script>
+<!-- Lucide Icons -->
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 <script>
     document.addEventListener(
       "DOMContentLoaded",
       event => {
         lucide.createIcons();
-        
+
         BatchCodeSelectInitializer.initialize(
           {
             batchCodeSelectElement: $('#batchCodeSelect'),
@@ -192,8 +194,6 @@
         );
       });
   </script>
-<!-- Lucide Icons -->
-<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 </head>
 <body>
 <!-- Navigation -->
@@ -220,19 +220,21 @@
             <i data-lucide="map-pin"></i>
             <span>Risk Map</span>
         </a>
-        <a href="HowBadIsMyBatch.html" class="navbar-item active" data-page="fulldata">
-            <i data-lucide="bar-chart-3"></i>
-            <span>Full Data</span>
-        </a>
         <a href="region.html" class="navbar-item">
             <i data-lucide="compass"></i>
             <span>Location</span>
         </a>
-    </div>
-    
-    <div class="navbar-actions">
+        <a href="HowBadIsMyBatch.html" class="navbar-item active" data-page="fulldata">
+            <i data-lucide="bar-chart-3"></i>
+            <span>Full Data</span>
+        </a>
+        <a href="LongCovidEconomyHub.html" class="navbar-item" data-page="economy">
+            <i data-lucide="trending-up"></i>
+            <span>Economic Impact</span>
         </a>
     </div>
+
+    <div class="navbar-actions"></div>
 </nav>
 
 <main class="page-content">
