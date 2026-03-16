@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Region Search - S2Y Batches</title>
+<meta name="description" content="Search vaccine risk data by zipcode, city, or state.">
+
+<!-- Favicon -->
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ERHYDH4P64"></script>
+<script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', 'G-ERHYDH4P64');
+</script>
+
+<!-- Design System -->
+<link rel="stylesheet" href="styles/variables.css">
+<link rel="stylesheet" href="styles/components.css">
+<link rel="stylesheet" href="styles/navbar.css">
+<link rel="stylesheet" href="styles/main.css">
+
+<!-- Lucide Icons -->
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+
+<style>
+    .page-content {
+        padding: var(--space-6);
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+    
+    .page-header {
+        text-align: center;
+        margin-bottom: var(--space-8);
+    }
+    
+    .page-header h1 {
+        font-size: var(--text-3xl);
+        margin-bottom: var(--space-2);
+    }
+    
+    .page-header p {
+        color: var(--muted-foreground);
+        font-size: var(--text-lg);
+    }
+    
+    .search-section {
+        max-width: 600px;
+        margin: 0 auto var(--space-8);
+    }
+    
+    .search-box-large {
+        display: flex;
+        align-items: center;
+        gap: var(--space-3);
+        padding: var(--space-4);
+        background: var(--background);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+    }
+    
+    .search-box-large input {
+        flex: 1;
+        padding: var(--space-3);
+        font-size: var(--text-lg);
+        background: transparent;
+        border: none;
+        outline: none;
+    }
+    
+    .search-box-large button {
+        padding: var(--space-3) var(--space-6);
+        background: var(--primary);
+        color: white;
+        border: none;
+        border-radius: var(--radius-md);
+        font-weight: 500;
+        cursor: pointer;
+        transition: opacity var(--transition-fast);
+    }
+    
+    .search-box-large button:hover {
+        opacity: 0.9;
+    }
+    
+    .quick-links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--space-2);
+        justify-content: center;
+        margin-bottom: var(--space-8);
+    }
+    
+    .quick-link {
+        padding: var(--space-2) var(--space-4);
+        background: var(--accent);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-full);
+        font-size: var(--text-sm);
+        cursor: pointer;
+        transition: all var(--transition-fast);
+    }
+    
+    .quick-link:hover {
+        background: var(--primary);
+        color: white;
+        border-color: var(--primary);
+    }
+    
+    .result-card {
+        padding: var(--space-6);
+        background: var(--background);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+    }
+    
+    .result-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: var(--space-4);
+    }
+    
+    .result-header h2 {
+        font-size: var(--text-xl);
+    }
+    
+    .risk-badge {
+        padding: var(--space-2) var(--space-4);
+        border-radius: var(--radius-full);
+        font-weight: 600;
+        font-size: var(--text-sm);
+    }
+    
+    .risk-low { background: oklch(0.55 0.15 150 / 0.2); color: oklch(0.55 0.15 150); }
+    .risk-medium { background: oklch(0.55 0.2 90 / 0.2); color: oklch(0.55 0.2 90); }
+    .risk-high { background: oklch(0.55 0.18 25 / 0.2); color: oklch(0.55 0.18 25); }
+    .risk-critical { background: oklch(0.55 0.18 25 / 0.3); color: oklch(0.55 0.18 25); }
+    
+    .result-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: var(--space-4);
+        margin-bottom: var(--space-4);
+    }
+    
+    .stat-item {
+        padding: var(--space-3);
+        background: var(--accent);
+        border-radius: var(--radius-md);
+    }
+    
+    .stat-label {
+        font-size: var(--text-sm);
+        color: var(--muted-foreground);
+    }
+    
+    .stat-value {
+        font-size: var(--text-2xl);
+        font-weight: 700;
+    }
+    
+    .top-batches {
+        margin-top: var(--space-4);
+    }
+    
+    .top-batches h3 {
+        font-size: var(--text-lg);
+        margin-bottom: var(--space-3);
+    }
+    
+    .batch-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--space-2);
+        padding: var(--space-2) var(--space-3);
+        margin: var(--space-1);
+        background: var(--accent);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
+        font-size: var(--text-sm);
+        text-decoration: none;
+        color: var(--foreground);
+        cursor: pointer;
+        transition: all var(--transition-fast);
+    }
+    
+    .batch-chip:hover {
+        border-color: var(--primary);
+        color: var(--primary);
+    }
+    
+    .hidden { display: none; }
+    
+    .loading {
+        text-align: center;
+        padding: var(--space-8);
+        color: var(--muted-foreground);
+    }
+    
+    .error-message {
+        padding: var(--space-4);
+        background: oklch(0.55 0.18 25 / 0.1);
+        border: 1px solid oklch(0.55 0.18 25 / 0.3);
+        border-radius: var(--radius-md);
+        color: oklch(0.55 0.18 25);
+        text-align: center;
+    }
+</style>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar navbar-primary">
+    <a href="index.html" class="navbar-brand">
+      <img src="s2y_logo_light.png" alt="S2Y" class="navbar-logo-img"><span class="sm-hidden">Batches</span>
+    </a>
+    
+    <button class="navbar-toggle" aria-label="Toggle menu">
+      <i data-lucide="menu"></i>
+    </button>
+    
+    <div class="navbar-menu">
+      <a href="batchCodes.html" class="navbar-item" data-page="batchcodes">
+        <i data-lucide="table-2"></i>
+        <span>Batch Codes</span>
+      </a>
+      <a href="symptoms.html" class="navbar-item" data-page="symptoms">
+        <i data-lucide="search"></i>
+        <span>Symptoms</span>
+      </a>
+      <a href="ZipcodeRiskMap.html" class="navbar-item" data-page="map">
+        <i data-lucide="map-pin"></i>
+        <span>Risk Map</span>
+      </a>
+      <a href="region.html" class="navbar-item active">
+        <i data-lucide="compass"></i>
+        <span>Location</span>
+      </a>
+      <a href="HowBadIsMyBatch.html" class="navbar-item" data-page="fulldata">
+        <i data-lucide="bar-chart-3"></i>
+        <span>Full Data</span>
+      </a>
+      <a href="LongCovidEconomyHub.html" class="navbar-item" data-page="economy">
+        <i data-lucide="trending-up"></i>
+        <span>Economic Impact</span>
+      </a>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="page-content">
+    <div class="page-header">
+      <h1>🔍 Search by Location</h1>
+      <p>Enter a zipcode to view vaccine risk information for your area</p>
+    </div>
+    
+    <!-- Search Box -->
+    <div class="search-section">
+      <div class="search-box-large">
+        <i data-lucide="map-pin" style="color: var(--muted-foreground)"></i>
+        <input type="text" id="zipcodeInput" placeholder="Enter zipcode (e.g., 10001)" maxlength="5">
+        <button id="searchBtn">Search</button>
+      </div>
+      
+      <!-- Quick Select -->
+      <div class="quick-links">
+        <span style="color: var(--muted-foreground); margin-right: var(--space-2);">Quick:</span>
+        <button class="quick-link" data-zip="10001">NYC</button>
+        <button class="quick-link" data-zip="90001">LA</button>
+        <button class="quick-link" data-zip="60601">Chicago</button>
+        <button class="quick-link" data-zip="77001">Houston</button>
+        <button class="quick-link" data-zip="85001">Phoenix</button>
+        <button class="quick-link" data-zip="19101">Philadelphia</button>
+      </div>
+    </div>
+    
+    <!-- Loading -->
+    <div id="loading" class="loading hidden">
+      <p>Searching...</p>
+    </div>
+    
+    <!-- Error -->
+    <div id="error" class="error-message hidden"></div>
+    
+    <!-- Result -->
+    <div id="result" class="result-card hidden">
+      <div class="result-header">
+        <h2 id="regionName">Region Name</h2>
+        <span id="riskBadge" class="risk-badge">Medium</span>
+      </div>
+      
+      <div class="result-stats">
+        <div class="stat-item">
+          <div class="stat-label">Risk Score</div>
+          <div class="stat-value" id="riskScore">0.0</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">Total Doses</div>
+          <div class="stat-value" id="totalDoses">0</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">Adverse Events</div>
+          <div class="stat-value" id="adverseEvents">0</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">per 100k doses</div>
+          <div class="stat-value" id="per100k">0.0</div>
+        </div>
+      </div>
+      
+      <div class="top-batches">
+        <h3>Top Risk Batches</h3>
+        <div id="topBatches"></div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // Initialize Lucide icons
+    lucide.createIcons();
+    
+    const API_BASE = 'https://s2y-batches-api.javenisme.workers.dev/api/v2';
+    
+    const zipcodeInput = document.getElementById('zipcodeInput');
+    const searchBtn = document.getElementById('searchBtn');
+    const loading = document.getElementById('loading');
+    const error = document.getElementById('error');
+    const result = document.getElementById('result');
+    
+    async function searchZipcode(zipcode) {
+        if (!zipcode || zipcode.length < 3) {
+            showError('Please enter at least 3 digits of a zipcode');
+            return;
+        }
+        
+        hideAll();
+        loading.classList.remove('hidden');
+        
+        try {
+            const response = await fetch(`${API_BASE}/risk/regional/zipcode/${zipcode}`);
+            if (!response.ok) throw new Error('Region not found');
+            const data = await response.json();
+            displayResult(data);
+        } catch (err) {
+            showError('Region not found. Please try a different zipcode.');
+        } finally {
+            loading.classList.add('hidden');
+        }
+    }
+    
+    function displayResult(data) {
+        document.getElementById('regionName').textContent = `${data.city}, ${data.state} ${data.zipcode}`;
+        
+        const badge = document.getElementById('riskBadge');
+        badge.textContent = data.risk_level;
+        badge.className = `risk-badge risk-${data.risk_level.toLowerCase()}`;
+        
+        document.getElementById('riskScore').textContent = data.region_risk_score.toFixed(1);
+        document.getElementById('totalDoses').textContent = data.total_doses.toLocaleString();
+        document.getElementById('adverseEvents').textContent = data.total_adverse_events.toLocaleString();
+        document.getElementById('per100k').textContent = data.adverse_events_per_100k.toFixed(1);
+        
+        // Top batches
+        const batchesContainer = document.getElementById('topBatches');
+        batchesContainer.innerHTML = data.top_batches.map(batch => 
+            `<a href="HowBadIsMyBatch.html?batch=${batch.code}" class="batch-chip">
+                ${batch.code} (${batch.risk_score})
+            </a>`
+        ).join('');
+        
+        result.classList.remove('hidden');
+    }
+    
+    function showError(msg) {
+        error.textContent = msg;
+        error.classList.remove('hidden');
+    }
+    
+    function hideAll() {
+        error.classList.add('hidden');
+        result.classList.add('hidden');
+    }
+    
+    // Event listeners
+    searchBtn.addEventListener('click', () => searchZipcode(zipcodeInput.value));
+    zipcodeInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') searchZipcode(zipcodeInput.value);
+    });
+    
+    document.querySelectorAll('.quick-link').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const zip = btn.dataset.zip;
+            zipcodeInput.value = zip;
+            searchZipcode(zip);
+        });
+    });
+  </script>
+</body>
+</html>

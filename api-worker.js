@@ -20,7 +20,7 @@ export default {
 
     // 检查 API Key (简单验证)
     const authHeader = request.headers.get('Authorization');
-    const isPublicEndpoint = url.pathname === '/health' || url.pathname === '/';
+    const isPublicEndpoint = url.pathname === '/health' || url.pathname === '/' || url.pathname.startsWith('/api/v2/risk/regional');
     
     if (!isPublicEndpoint && !authHeader?.startsWith('Bearer ')) {
       return new Response(JSON.stringify({
@@ -264,6 +264,47 @@ export default {
           severe_reports_pct: 24.36,
           lethality_pct: 2.95,
           risk_score: 7.2
+        }), { headers: corsHeaders });
+      }
+
+      // ======== V2 API Endpoints ========
+      
+      // 获取地区风险信息 (v2)
+      const regionZipMatch = url.pathname.match(/^\/api\/v2\/risk\/regional\/zipcode\/(\d+)$/);
+      if (regionZipMatch && request.method === 'GET') {
+        const zipcode = regionZipMatch[1];
+        
+        // Mock data based on zipcode
+        const mockCities = {
+          '10001': {city: 'New York', state: 'NY'},
+          '90001': {city: 'Los Angeles', state: 'CA'},
+          '60601': {city: 'Chicago', state: 'IL'},
+          '77001': {city: 'Houston', state: 'TX'},
+          '85001': {city: 'Phoenix', state: 'AZ'},
+          '19101': {city: 'Philadelphia', state: 'PA'},
+        };
+        
+        const cityInfo = mockCities[zipcode] || {city: 'Unknown City', state: 'XX'};
+        const baseScore = 4 + (parseInt(zipcode.slice(-2)) % 6);
+        
+        return new Response(JSON.stringify({
+          zipcode: zipcode,
+          city: cityInfo.city,
+          state: cityInfo.state,
+          region_risk_score: baseScore + Math.random() * 2,
+          risk_level: baseScore > 6 ? 'High' : baseScore > 4 ? 'Medium' : 'Low',
+          total_doses: Math.floor(50000 + Math.random() * 200000),
+          total_adverse_events: Math.floor(100 + Math.random() * 500),
+          adverse_events_per_100k: 150 + Math.random() * 200,
+          num_batches: Math.floor(50 + Math.random() * 150),
+          num_providers: Math.floor(10 + Math.random() * 30),
+          top_batches: [
+            {code: 'EN6201', risk_score: 7.2, reports: 45},
+            {code: 'EW0182', risk_score: 6.8, reports: 38},
+            {code: 'EZ5012', risk_score: 5.9, reports: 25}
+          ],
+          healthcare_access_score: 6 + Math.random() * 4,
+          population_health_index: 6 + Math.random() * 3
         }), { headers: corsHeaders });
       }
 

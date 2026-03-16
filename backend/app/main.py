@@ -6,6 +6,7 @@ from fastapi.responses import JSONResponse
 
 from app.config import settings
 from app.api.v1 import api_router
+from app.api.v2 import api_router as api_router_v2
 
 
 def create_application() -> FastAPI:
@@ -30,6 +31,7 @@ def create_application() -> FastAPI:
 
     # Include API router
     app.include_router(api_router, prefix=settings.API_V1_STR)
+    app.include_router(api_router_v2, prefix="/api/v2")
 
     return app
 
