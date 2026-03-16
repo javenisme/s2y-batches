@@ -326,26 +326,42 @@
     lucide.createIcons();
     
     const API_BASE = 'https://s2y-batches-api.javenisme.workers.dev/api/v2';
-    
+
     const zipcodeInput = document.getElementById('zipcodeInput');
     const searchBtn = document.getElementById('searchBtn');
     const loading = document.getElementById('loading');
     const error = document.getElementById('error');
     const result = document.getElementById('result');
-    
+
+    let zipcodeLookup = null;
+    async function getZipcodeLookup() {
+        if (zipcodeLookup) return zipcodeLookup;
+        const res = await fetch('data/zipcode-lookup.json');
+        zipcodeLookup = await res.json();
+        return zipcodeLookup;
+    }
+
     async function searchZipcode(zipcode) {
         if (!zipcode || zipcode.length < 3) {
             showError('Please enter at least 3 digits of a zipcode');
             return;
         }
-        
+
         hideAll();
         loading.classList.remove('hidden');
-        
+
         try {
-            const response = await fetch(`${API_BASE}/risk/regional/zipcode/${zipcode}`);
-            if (!response.ok) throw new Error('Region not found');
-            const data = await response.json();
+            const [apiResponse, lookup] = await Promise.all([
+                fetch(`${API_BASE}/risk/regional/zipcode/${zipcode}`),
+                getZipcodeLookup()
+            ]);
+            if (!apiResponse.ok) throw new Error('Region not found');
+            const data = await apiResponse.json();
+            const localInfo = lookup[zipcode.padStart(5, '0')];
+            if (localInfo) {
+                data.city = localInfo.city;
+                data.state = localInfo.state;
+            }
             displayResult(data);
         } catch (err) {
             showError('Region not found. Please try a different zipcode.');
@@ -353,7 +369,7 @@
             loading.classList.add('hidden');
         }
     }
-    
+
     function displayResult(data) {
         document.getElementById('regionName').textContent = `${data.city}, ${data.state} ${data.zipcode}`;
         
@@ -368,8 +384,8 @@
         
         // Top batches
         const batchesContainer = document.getElementById('topBatches');
-        batchesContainer.innerHTML = data.top_batches.map(batch => 
-            `<a href="HowBadIsMyBatch.html?batch=${batch.code}" class="batch-chip">
+        batchesContainer.innerHTML = data.top_batches.map(batch =>
+            `<a href="HowBadIsMyBatch.html?batchCode=${batch.code}" class="batch-chip">
                 ${batch.code} (${batch.risk_score})
             </a>`
         ).join('');

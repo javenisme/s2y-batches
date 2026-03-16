@@ -274,17 +274,15 @@ export default {
       if (regionZipMatch && request.method === 'GET') {
         const zipcode = regionZipMatch[1];
         
-        // Mock data based on zipcode
-        const mockCities = {
-          '10001': {city: 'New York', state: 'NY'},
-          '90001': {city: 'Los Angeles', state: 'CA'},
-          '60601': {city: 'Chicago', state: 'IL'},
-          '77001': {city: 'Houston', state: 'TX'},
-          '85001': {city: 'Phoenix', state: 'AZ'},
-          '19101': {city: 'Philadelphia', state: 'PA'},
-        };
-        
-        const cityInfo = mockCities[zipcode] || {city: 'Unknown City', state: 'XX'};
+        let cityInfo = {city: 'Unknown City', state: 'XX'};
+        try {
+          const lookupRes = await fetch('https://batches.s2y.org/data/zipcode-lookup.json');
+          if (lookupRes.ok) {
+            const lookup = await lookupRes.json();
+            const entry = lookup[zipcode.padStart(5, '0')];
+            if (entry) cityInfo = entry;
+          }
+        } catch (_) {}
         const baseScore = 4 + (parseInt(zipcode.slice(-2)) % 6);
         
         return new Response(JSON.stringify({
