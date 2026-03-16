@@ -5,6 +5,7 @@
  */
 
 const DATA_CACHE_KEY = 'zipcode_risk_data';
+const STATS_CACHE_KEY = 'zipcode_risk_stats';
 const CACHE_EXPIRY_HOURS = 24; // Cache data for 24 hours
 
 let zipcodeData = null;
@@ -14,9 +15,9 @@ let scatterChart = null;
 let mapInstance = null;
 
 // Check cache and load data
-function getCachedData() {
+function getCachedData(key) {
     try {
-        const cached = localStorage.getItem(DATA_CACHE_KEY);
+        const cached = localStorage.getItem(key);
         if (cached) {
             const parsed = JSON.parse(cached);
             // Validate cache structure
@@ -36,14 +37,16 @@ function getCachedData() {
     return null;
 }
 
-// Save data to cache
-function saveDataToCache(data) {
-    const cacheData = {
-        data: data,
-        timestamp: Date.now()
-    };
-    localStorage.setItem(DATA_CACHE_KEY, JSON.stringify(cacheData));
-    console.log('Data cached for ' + CACHE_EXPIRY_HOURS + ' hours');
+// Save data to cache (key can be DATA_CACHE_KEY or STATS_CACHE_KEY)
+function saveDataToCache(key, data) {
+    try {
+        const cacheData = { data: data, timestamp: Date.now() };
+        localStorage.setItem(key, JSON.stringify(cacheData));
+        console.log(`[${key}] cached for ${CACHE_EXPIRY_HOURS} hours`);
+    } catch (e) {
+        // QuotaExceededError or similar — skip caching silently
+        console.warn(`[${key}] cache write failed (quota?):`, e.name);
+    }
 }
 
 // Load data and initialize visualizations
@@ -55,29 +58,31 @@ $(document).ready(function() {
 
 async function loadData() {
     try {
-        // Try to get cached data first
-        let cachedSummary = getCachedData();
-        
+        // Try to get cached summary
+        let cachedSummary = getCachedData(DATA_CACHE_KEY);
+        let summaryJson;
         if (cachedSummary && cachedSummary.columns && cachedSummary.data) {
-            // Valid cached data
-            console.log('Using cached data');
-            var summaryJson = cachedSummary;
+            console.log('Using cached summary');
+            summaryJson = cachedSummary;
         } else {
-            // Load from network
             const summaryResponse = await fetch('./data/zipcodeRiskMap/ZipcodeRiskSummary.json');
-            if (!summaryResponse.ok) {
-                throw new Error('Failed to fetch summary data: ' + summaryResponse.status);
-            }
-            var summaryJson = await summaryResponse.json();
-            saveDataToCache(summaryJson);
+            if (!summaryResponse.ok) throw new Error('Failed to fetch summary data: ' + summaryResponse.status);
+            summaryJson = await summaryResponse.json();
+            saveDataToCache(DATA_CACHE_KEY, summaryJson);
         }
 
-        // Load statistics
-        const statsResponse = await fetch('./data/zipcodeRiskMap/ZipcodeRiskStats.json');
-        if (!statsResponse.ok) {
-            throw new Error('Failed to fetch stats: ' + statsResponse.status);
+        // Try to get cached stats
+        let cachedStats = getCachedData(STATS_CACHE_KEY);
+        let stats;
+        if (cachedStats) {
+            console.log('Using cached stats');
+            stats = cachedStats;
+        } else {
+            const statsResponse = await fetch('./data/zipcodeRiskMap/ZipcodeRiskStats.json');
+            if (!statsResponse.ok) throw new Error('Failed to fetch stats: ' + statsResponse.status);
+            stats = await statsResponse.json();
+            saveDataToCache(STATS_CACHE_KEY, stats);
         }
-        const stats = await statsResponse.json();
 
         // Process data
         zipcodeData = parseDataTableJson(summaryJson);
